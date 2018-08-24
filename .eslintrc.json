@@ -1,0 +1,10 @@
+{
+  "env": {
+    "jest": true
+  },
+  "extends": "vazco/prettier",
+  "root": true,
+  "globals": {
+    "testWithNCollections": false
+  }
+}
