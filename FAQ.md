@@ -2,8 +2,6 @@
   - Every relation is valid:
     - Relation key is present.
     - Relation target is present.
-  - Relations forms a tree, not a graph or even DAG:
-    - If there are two paths to one collection, it's not guaranteed to work.
 
 ### Few notes:
   - `$group:`
@@ -31,7 +29,6 @@
   - Delaying `$match` up to some point (it might influence `$group` phases).
   - Make `$limit` and `$skip` happen as soon as possible without changing the result.
     - This will require a note about relation arity (one-one, one-many, many-many).
-  - Make it work on full graphs or at least DAGs.
   - Make use of weights to choose "lighter" paths.
   - Mongo 3.4 possibilities:
     - `$graphLookup`
