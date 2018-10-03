@@ -1,74 +1,142 @@
 const {build} = require('sparrowql');
 
-testWithNCollections(2, 'demo', async (Posts, Users) => {
+testWithNCollections(3, 'demo', async (Blogs, Posts, Users) => {
+    const blogs = [
+        {_id: 0, ownerId: 3, topic: 'Best blog!'} // prettier ignore
+    ];
+
     const posts = [
-        {author: 0, title: 'Being fast for dummies'},
-        {author: 0, title: 'Being declarative for dummies'},
-        {author: 1, title: 'Amazing!'},
-        {author: 2, title: 'A sparrow, really?'}
+        {_id: 0, authorId: 0, blogId: 0, title: 'Being fast for dummies'},
+        {_id: 1, authorId: 0, blogId: 0, title: 'Being declarative for dummies'},
+        {_id: 2, authorId: 1, blogId: 0, title: 'Amazing!'},
+        {_id: 3, authorId: 2, blogId: 0, title: 'A sparrow, really?'}
     ];
 
     const users = [
         {_id: 0, name: 'SparrowQL', about: 'Declarative MongoDB aggregations'},
         {_id: 1, name: 'Random #1', about: 'Node.js developer'},
-        {_id: 2, name: 'Random #2', about: 'Bird lover'}
+        {_id: 2, name: 'Random #2', about: 'Bird lover'},
+        {_id: 3, name: 'BlogOwner', about: 'Owner of the only blog here'}
     ];
 
+    await Blogs.insertMany(blogs);
     await Posts.insertMany(posts);
     await Users.insertMany(users);
 
-    const find = projection =>
-        Posts.aggregate(
-            build({
-                projection,
-                relations: [
-                    {
-                        from: Posts.collectionName,
-                        to: Users.collectionName,
-                        foreign: '_id',
-                        local: 'author'
-                    }
-                ],
-                start: Posts.collectionName
-            })
-        ).toArray();
+    const pipelineA = build({
+        aliases: {
+            Blogs: Blogs.collectionName,
+            Posts: Posts.collectionName,
+            Users: Users.collectionName
+        },
+        projection: {
+            _id: 0,
+            blogTopic: 'Blogs.topic',
+            postTitle: 'Posts.title'
+        },
+        relations: [
+            {to: 'Blogs', from: 'Posts', foreign: '_id', local: 'blogId'},
+            {to: 'Users', from: 'Blogs', foreign: '_id', local: 'ownerId'},
+            {to: 'Users', from: 'Posts', foreign: '_id', local: 'authorId'}
+        ],
+        start: 'Posts'
+    });
 
-    const fieldsA = {
-        _id: 0,
-        author: `${Posts.collectionName}.author`,
-        title: `${Posts.collectionName}.title`
-    };
-
-    // [ { '$project': { _id: 0, author: '$author', title: '$title' } } ]
-    await expect(find(fieldsA)).resolves.toEqual([
-        {author: 0, title: 'Being fast for dummies'},
-        {author: 0, title: 'Being declarative for dummies'},
-        {author: 1, title: 'Amazing!'},
-        {author: 2, title: 'A sparrow, really?'}
+    await expect(Posts.aggregate(pipelineA).toArray()).resolves.toEqual([
+        {blogTopic: 'Best blog!', postTitle: 'Being fast for dummies'},
+        {blogTopic: 'Best blog!', postTitle: 'Being declarative for dummies'},
+        {blogTopic: 'Best blog!', postTitle: 'Amazing!'},
+        {blogTopic: 'Best blog!', postTitle: 'A sparrow, really?'}
     ]);
 
-    const fieldsB = {
-        _id: 0,
-        author: `${Users.collectionName}.name`,
-        title: `${Posts.collectionName}.title`
-    };
+    const pipelineB = build({
+        aliases: {
+            Authors: Users.collectionName,
+            Blogs: Blogs.collectionName,
+            Owners: Users.collectionName,
+            Posts: Posts.collectionName
+        },
+        projection: {
+            _id: 0,
+            blogOwnerName: 'Owners.name',
+            postTitle: 'Posts.title'
+        },
+        relations: [
+            {to: 'Blogs', from: 'Posts', foreign: '_id', local: 'blogId'},
+            {to: 'Owners', from: 'Blogs', foreign: '_id', local: 'ownerId'},
+            {to: 'Authors', from: 'Posts', foreign: '_id', local: 'authorId'}
+        ],
+        start: 'Posts'
+    });
 
-    // [ { '$lookup':
-    //      { as: 'SPARROW_JOINED_Users',
-    //        foreignField: '_id',
-    //        from: 'Users',
-    //        localField: 'author' } },
-    //   { '$unwind':
-    //      { path: '$SPARROW_JOINED_Users',
-    //        preserveNullAndEmptyArrays: true } },
-    //   { '$project':
-    //      { _id: 0,
-    //        author: '$SPARROW_JOINED_Users.name',
-    //        title: '$title' } } ]
-    await expect(find(fieldsB)).resolves.toEqual([
-        {author: 'SparrowQL', title: 'Being fast for dummies'},
-        {author: 'SparrowQL', title: 'Being declarative for dummies'},
-        {author: 'Random #1', title: 'Amazing!'},
-        {author: 'Random #2', title: 'A sparrow, really?'}
+    await expect(Posts.aggregate(pipelineB).toArray()).resolves.toEqual([
+        {blogOwnerName: 'BlogOwner', postTitle: 'Being fast for dummies'},
+        {blogOwnerName: 'BlogOwner', postTitle: 'Being declarative for dummies'},
+        {blogOwnerName: 'BlogOwner', postTitle: 'Amazing!'},
+        {blogOwnerName: 'BlogOwner', postTitle: 'A sparrow, really?'}
+    ]);
+
+    const pipelineC = build({
+        aliases: {
+            Authors: Users.collectionName,
+            Blogs: Blogs.collectionName,
+            Owners: Users.collectionName,
+            Posts: Posts.collectionName
+        },
+        projection: {
+            _id: 0,
+            postTitle: 'Posts.title'
+        },
+        relations: [
+            {to: 'Blogs', from: 'Posts', foreign: '_id', local: 'blogId'},
+            {to: 'Owners', from: 'Blogs', foreign: '_id', local: 'ownerId'},
+            {to: 'Authors', from: 'Posts', foreign: '_id', local: 'authorId'}
+        ],
+        start: 'Posts'
+    });
+
+    await expect(Posts.aggregate(pipelineC).toArray()).resolves.toEqual([
+        {postTitle: 'Being fast for dummies'},
+        {postTitle: 'Being declarative for dummies'},
+        {postTitle: 'Amazing!'},
+        {postTitle: 'A sparrow, really?'}
+    ]);
+
+    await Posts.insertMany([
+        {_id: 4, authorId: 1, blogId: 0, title: 'Best!'},
+        {_id: 5, authorId: 1, blogId: 0, title: 'Superb!'}
+    ]);
+
+    const pipelineD = build({
+        aliases: {
+            Authors: Users.collectionName,
+            Blogs: Blogs.collectionName,
+            Owners: Users.collectionName,
+            Posts: Posts.collectionName
+        },
+        limit: 1,
+        projection: {
+            _id: 0,
+            blogOwnerName: 'Owners.name',
+            postAuthorName: 'Authors.name',
+            postTitle: 'Posts.title'
+        },
+        query: {'Authors.name': 'Random #1'},
+        relations: [
+            {to: 'Blogs', from: 'Posts', foreign: '_id', local: 'blogId'},
+            {to: 'Owners', from: 'Blogs', foreign: '_id', local: 'ownerId'},
+            {to: 'Authors', from: 'Posts', foreign: '_id', local: 'authorId'}
+        ],
+        skip: 1,
+        sort: {'Posts.title': -1},
+        start: 'Posts'
+    });
+
+    await expect(Posts.aggregate(pipelineD).toArray()).resolves.toEqual([
+        {
+            blogOwnerName: 'BlogOwner',
+            postAuthorName: 'Random #1',
+            postTitle: 'Best!'
+        }
     ]);
 });
