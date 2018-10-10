@@ -1,0 +1,17 @@
+{
+  "name": "sparrowql",
+  "version": "0.2.0",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "description": "Declarative MongoDB aggregations.",
+  "repository": "https://github.com/vazco/sparrowql/tree/master/packages/sparrowql",
+  "bugs": "https://github.com/vazco/sparrowql/issues",
+  "keywords": [
+    "aggregate",
+    "declarative",
+    "mongodb"
+  ],
+  "engines": {
+    "node": ">=8"
+  }
+}
