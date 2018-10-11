@@ -1,27 +1,14 @@
 {
-  "name": "sparrowql",
-  "version": "0.2.0",
-  "license": "MIT",
-  "main": "lib/index.js",
-  "description": "Declarative MongoDB aggregations.",
-  "repository": "https://github.com/vazco/sparrowql",
-  "bugs": "https://github.com/vazco/sparrowql/issues",
-  "keywords": [
-    "aggregate",
-    "declarative",
-    "mongodb"
-  ],
-  "engines": {
-    "node": ">=8"
-  },
+  "private": true,
   "scripts": {
     "coverage": "jest --coverage",
     "coverage:report": "codecov",
     "lint": "eslint .",
+    "postinstall": "lerna bootstrap",
     "pretest": "npm run lint",
     "test": "jest"
   },
-  "devDependencies": {
+  "dependencies": {
     "babel-eslint": "8.2.6",
     "codecov": "3.0.4",
     "eslint": "5.4.0",
@@ -32,6 +19,7 @@
     "eslint-plugin-react": "7.11.1",
     "eslint-plugin-vazco": "1.0.0",
     "jest": "23.5.0",
+    "lerna": "3.4.3",
     "mongodb": "3.1.3",
     "prettier": "1.14.2",
     "uuid": "3.3.2"
@@ -45,8 +33,9 @@
     "globalSetup": "./__mongo__/setup.js",
     "globalTeardown": "./__mongo__/teardown.js",
     "moduleNameMapper": {
-      "^sparrowql$": "<rootDir>"
+      "^sparrowql([^/]*)(.*)$": "<rootDir>/packages/sparrowql$1/lib$2"
     },
     "testEnvironment": "./__mongo__/environment.js"
-  }
+  },
+  "name": "sparrowql-public"
 }
