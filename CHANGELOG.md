@@ -1,3 +1,6 @@
+## v0.3.1 (2018-10-15)
+- **Added:** `README.md` files for each package.
+
 ## v0.3.0 (2018-10-15)
 - **Added:** New `sparrowql-graphql` package with GraphQL interface. [\#2](https://github.com/vazco/sparrowql/issues/2)
 
