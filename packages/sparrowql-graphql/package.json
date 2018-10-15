@@ -1,0 +1,22 @@
+{
+  "name": "sparrowql-graphql",
+  "version": "0.2.0",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "description": "GraphQL interface for SparrowQL.",
+  "repository": "https://github.com/vazco/sparrowql/tree/master/packages/sparrowql-graphql",
+  "bugs": "https://github.com/vazco/sparrowql/issues",
+  "keywords": [
+    "aggregate",
+    "declarative",
+    "graphql",
+    "mongodb"
+  ],
+  "dependencies": {
+    "graphql": "^14.0.0",
+    "sparrowql": "file:../sparrowql"
+  },
+  "engines": {
+    "node": ">=8"
+  }
+}
