@@ -107,19 +107,30 @@ function prepare({aliases = {}, computed, limit, projection, query, relations = 
         if (toCompute.length !== 0) {
             toCompute.forEach(([name, definition]) => {
                 const isAbsolute = steps.some(step => 'group' in step || 'projection' in step);
+                function addMappedFields(object, field) {
+                    if (definition.mapper) {
+                        if (typeof projection[field] === 'string') {
+                            projection[field]
+                                .replace(/^\$/, '')
+                                .split('.')
+                                .slice(1, -1)
+                                .forEach((_, index, parts) => {
+                                    object[parts.slice(0, index + 1)] = 1;
+                                });
+                        }
+
+                        object[field] = 1;
+                    } else {
+                        object[field] = {$first: isAbsolute ? `$${field}` : relative(projection[field], true)};
+                    }
+                    return object;
+                }
 
                 joined.push(name);
                 steps.push({
                     [definition.mapper ? 'projection' : 'group']: Object.assign(
                         {},
-                        projection
-                            ? Object.keys(projection).reduce((object, field) => {
-                                  object[field] = definition.mapper
-                                      ? 1
-                                      : {$first: isAbsolute ? `$${field}` : relative(projection[field], true)};
-                                  return object;
-                              }, {})
-                            : {},
+                        projection ? Object.keys(projection).reduce(addMappedFields, {}) : {},
                         projection
                             ? Object.values(projection).reduce((object, value) => {
                                   if (typeof value !== 'string') return object;
@@ -130,10 +141,7 @@ function prepare({aliases = {}, computed, limit, projection, query, relations = 
                                   const field = relative(collection, false);
                                   if (!field) return object;
 
-                                  object[field] = definition.mapper
-                                      ? 1
-                                      : {$first: isAbsolute ? `$${field}` : relative(projection[field], true)};
-                                  return object;
+                                  return addMappedFields(object, field);
                               }, {})
                             : {},
                         definition.perform(relative)

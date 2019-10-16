@@ -59,4 +59,19 @@ describe('projection', () => {
 
         await expect(collectionA.aggregate(pipeline).toArray()).resolves.toEqual(docs);
     });
+
+    testWithNCollections(1, 'should work with nested path', async collectionA => {
+        const docs = [{x: uuid(), y: {z: uuid()}}];
+        await collectionA.insertMany(docs);
+
+        docs[0].x = docs[0].y.z;
+        delete docs[0].y;
+
+        const pipeline = build({
+            projection: {x: `${collectionA.collectionName}.y.z`},
+            start: collectionA.collectionName
+        });
+
+        await expect(collectionA.aggregate(pipeline).toArray()).resolves.toEqual(docs);
+    });
 });
