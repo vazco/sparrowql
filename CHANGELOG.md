@@ -1,3 +1,6 @@
+## v0.3.2 (2019-10-16)
+- **Fixed:** Resolution of nested fields in `$project`.
+
 ## v0.3.1 (2018-10-15)
 - **Added:** `README.md` files for each package.
 
