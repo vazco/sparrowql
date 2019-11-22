@@ -12,15 +12,10 @@
 
 <p align="center">
     <strong><a href="https://github.com/vazco/sparrowql/blob/master/.github/CONTRIBUTING.md">Contribute</a></strong> |
-    <strong>
-     <a href="#usage">Usage</a>
-    </strong> |
+    <strong><a href="#usage">Usage</a></strong> |
     <strong><a href="https://github.com/vazco/sparrowql/blob/master/INTRODUCTION.md">Documentation</a></strong> |
-    <strong><a href="https://github.com/vazco/sparrowql/blob/master/FAQ.md">FAQ</a></strong>
-    
+    <strong><a href="https://github.com/vazco/sparrowql/blob/master/FAQ.md">FAQ</a></strong> 
 </p>
-
-
 
 <p align="center">
     <a href="https://codecov.io/gh/vazco/sparrowql">
@@ -173,7 +168,6 @@ const results = await Posts.aggregate(pipeline).toArray();
 ```
 
 <br>
-
 SparrowQL also may provide you with few other stages you might want to use: 
 * __sort__ - handle sort, which maps to [_\$sort_](https://docs.mongodb.com/manual/reference/operator/aggregation/sort/index.html) directly
 * __query__ - handle query, which maps to [_\$match_](https://docs.mongodb.com/manual/reference/operator/aggregation/match/index.html) directly*
