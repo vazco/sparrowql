@@ -168,7 +168,8 @@ const results = await Posts.aggregate(pipeline).toArray();
 ```
 
 <br>
-SparrowQL also may provide you with few other stages you might want to use: 
+
+SparrowQL also may provide you with few other stages you might want to use:
 * __sort__ - handle sort, which maps to [_\$sort_](https://docs.mongodb.com/manual/reference/operator/aggregation/sort/index.html) directly
 * __query__ - handle query, which maps to [_\$match_](https://docs.mongodb.com/manual/reference/operator/aggregation/match/index.html) directly*
 * __limit__ - handle limit, which maps to [_\$limit_](https://docs.mongodb.com/manual/reference/operator/aggregation/limit/index.html) and [_\$skip_](https://docs.mongodb.com/manual/reference/operator/aggregation/skip/index.html) directly*
