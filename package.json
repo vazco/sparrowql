@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "babel-eslint": "8.2.6",
-    "codecov": "3.0.4",
+    "codecov": "3.6.5",
     "eslint": "5.4.0",
     "eslint-config-prettier": "3.0.1",
     "eslint-config-vazco": "4.0.0",
