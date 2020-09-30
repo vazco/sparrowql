@@ -253,7 +253,7 @@ const translateOperators = {
     relation: (start, step) => [
         {
             $lookup: {
-                as: getNameRelative(start, step.relation.to, false),
+                as: getNameRelative(start, step.relation.to, false, true),
                 foreignField: step.relation.foreign,
                 from: step.relation.toAlias,
                 localField: step.relation.local
@@ -261,7 +261,7 @@ const translateOperators = {
         },
         {
             $unwind: {
-                path: getNameRelative(start, step.relation.to, true),
+                path: getNameRelative(start, step.relation.to, true, true),
                 preserveNullAndEmptyArrays: true
             }
         }

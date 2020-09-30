@@ -54,7 +54,7 @@ function getNameCollection(name) {
     return name.split('.', 2)[0];
 }
 
-function getNameRelative(prefix, name, isPath) {
+function getNameRelative(prefix, name, isPath, isRelation = false) {
     if (name === 0 || name === 1) return name;
     if (typeof name === 'object') return name;
     if (isOperator(name)) return name;
@@ -63,7 +63,7 @@ function getNameRelative(prefix, name, isPath) {
             .split('.')
             .slice(1)
             .join('.');
-    } else if (name.startsWith(prefix)) {
+    } else if (!isRelation && name.startsWith(prefix)) {
         name = name.replace(prefix, '');
     } else {
         name = `${PREFIX_JOINED}${name}`;

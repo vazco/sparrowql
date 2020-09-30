@@ -9,9 +9,11 @@ class MongoEnvironment extends NodeEnvironment {
         await setup();
         await super.setup();
 
-        this.global.testWithNCollections = (n, name, fn) => {
-            this.global.test(name, async () => {
-                const collections = Array.from({length: n}, () => global.__MONGO__.db.collection(uuid()));
+        this.global.testWithNCollections = (newCollections, testName, fn) => {
+            this.global.test(testName, async () => {
+                const collections = Array.from({length: newCollections.length || newCollections}, (_, index) =>
+                    global.__MONGO__.db.collection(newCollections[index] || uuid())
+                );
                 try {
                     await fn(...collections);
                 } finally {
