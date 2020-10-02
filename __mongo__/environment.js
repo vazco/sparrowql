@@ -11,9 +11,10 @@ class MongoEnvironment extends NodeEnvironment {
 
         this.global.testWithNCollections = (newCollections, testName, fn) => {
             this.global.test(testName, async () => {
-                const collections = Array.from({length: newCollections.length || newCollections}, (_, index) =>
-                    global.__MONGO__.db.collection(newCollections[index] || uuid())
-                );
+                const db = global.__MONGO__.db;
+                const collections = Array.isArray(newCollections)
+                    ? newCollections.map(name => db.collection(name))
+                    : Array.from({length: newCollections}, () => db.collection(uuid()));
                 try {
                     await fn(...collections);
                 } finally {
