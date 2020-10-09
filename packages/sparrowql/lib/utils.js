@@ -63,7 +63,7 @@ function getNameRelative(prefix, name, isPath) {
             .split('.')
             .slice(1)
             .join('.');
-    } else if (name.startsWith(prefix)) {
+    } else if (name.startsWith(prefix.replace(/\.?$/, '.'))) {
         name = name.replace(prefix, '');
     } else {
         name = `${PREFIX_JOINED}${name}`;
