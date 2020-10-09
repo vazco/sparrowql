@@ -1,3 +1,6 @@
+## v0.3.3 (2020-10-09)
+- **Fixed:** Incorrect pipeline build result when one collection name is a prefix of the other collection name. [\#19](https://github.com/vazco/sparrowql/issues/19)
+
 ## v0.3.2 (2019-10-16)
 - **Fixed:** Resolution of nested fields in `$project`.
 
