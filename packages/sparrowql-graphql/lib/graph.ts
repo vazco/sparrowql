@@ -1,6 +1,6 @@
-const {visit} = require('graphql/language');
+import {visit} from 'graphql/language';
 
-const {build} = require('sparrowql');
+import {build} from 'sparrowql';
 
 function extractType(type) {
     return type.ofType ? extractType(type.ofType) : type;
@@ -10,7 +10,7 @@ function extractTypeAST(type) {
     return type.kind === 'ListType' || type.kind === 'NonNullType' ? extractTypeAST(type.type) : type;
 }
 
-function astToOptions(schemaAST, {directiveCollection = 'collection', directiveRelation = 'relationTo'} = {}) {
+export function astToOptions(schemaAST, {directiveCollection = 'collection', directiveRelation = 'relationTo'} = {}) {
     // Local mappings.
     const collection2type = {};
     const type2collection = {};
@@ -73,7 +73,7 @@ function astToOptions(schemaAST, {directiveCollection = 'collection', directiveR
     return {collections, relations, typeMap};
 }
 
-function astToPipeline(info, options) {
+export function astToPipeline(info, options) {
     const scopes = [];
     const inflateMap = {};
     const projection = {};
@@ -119,8 +119,3 @@ function astToPipeline(info, options) {
 
     return build({...options, projection}).concat({$project: inflateMap[info.fieldName]});
 }
-
-module.exports = {
-    astToOptions,
-    astToPipeline
-};

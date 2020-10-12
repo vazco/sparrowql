@@ -1,11 +1,11 @@
-const {closestPath, getNameCollection, getNameRelative, isComputed, isOperator, stripComputed} = require('./utils');
+import {closestPath, getNameCollection, getNameRelative, isComputed, isOperator, stripComputed} from './utils';
 
-function build(options) {
+export function build(options) {
     return translate(options.start, prepare(options));
 }
 
 // eslint-disable-next-line complexity
-function prepare({aliases = {}, computed, limit, projection, query, relations = [], skip, sort, start}) {
+export function prepare({aliases = {}, computed, limit, projection, query, relations = [], skip, sort, start}) {
     const relative = getNameRelative.bind(null, `${start}.`);
 
     const steps = [];
@@ -270,7 +270,7 @@ const translateOperators = {
     sort: (start, step) => [{$sort: step.sort}]
 };
 
-function translate(start, steps) {
+export function translate(start, steps) {
     const pipeline = [];
 
     for (const step of steps) {
@@ -289,9 +289,3 @@ function translate(start, steps) {
 
     return pipeline;
 }
-
-module.exports = {
-    build,
-    prepare,
-    translate
-};

@@ -1,6 +1,6 @@
-const {PREFIX_COMPUTED, PREFIX_JOINED} = require('./const');
+import {PREFIX_COMPUTED, PREFIX_JOINED} from './const';
 
-function closestPath(relations, starts, ends, query) {
+export function closestPath(relations, starts, ends, query) {
     let bestCost = Infinity;
     let bestPath = [];
 
@@ -15,7 +15,7 @@ function closestPath(relations, starts, ends, query) {
     return {cost: bestCost, path: bestPath};
 }
 
-function closestPathBFS(relations, start, ends, query) {
+export function closestPathBFS(relations, start, ends, query) {
     const visited = {[start.from]: start};
     const inQuery = Object.keys(query || {}).map(getNameCollection);
 
@@ -47,14 +47,14 @@ function closestPathBFS(relations, start, ends, query) {
     return {cost: Infinity, path: []};
 }
 
-function getNameCollection(name) {
+export function getNameCollection(name) {
     if (name === 0 || name === 1) return undefined;
     if (typeof name === 'object') return undefined;
 
     return name.split('.', 2)[0];
 }
 
-function getNameRelative(prefix, name, isPath) {
+export function getNameRelative(prefix, name, isPath) {
     if (name === 0 || name === 1) return name;
     if (typeof name === 'object') return name;
     if (isOperator(name)) return name;
@@ -72,29 +72,18 @@ function getNameRelative(prefix, name, isPath) {
     return isPath ? `$${name}` : name;
 }
 
-function isComputed(field) {
+export function isComputed(field) {
     return field.startsWith(PREFIX_COMPUTED);
 }
 
-function isOperator(field) {
+export function isOperator(field) {
     return field.startsWith('$');
 }
 
-function makeComputed(field) {
+export function makeComputed(field) {
     return PREFIX_COMPUTED + field;
 }
 
-function stripComputed(field) {
+export function stripComputed(field) {
     return field.replace(PREFIX_COMPUTED, '');
 }
-
-module.exports = {
-    closestPath,
-    closestPathBFS,
-    getNameCollection,
-    getNameRelative,
-    isComputed,
-    isOperator,
-    makeComputed,
-    stripComputed
-};
