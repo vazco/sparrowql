@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "tsconfig.global.json" },
+    { "path": "packages/sparrowql/tsconfig.json" },
+    { "path": "packages/sparrowql-graphql/tsconfig.json" }
+  ]
+}

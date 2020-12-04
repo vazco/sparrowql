@@ -1,38 +1,77 @@
 import {closestPath, getNameCollection, getNameRelative, isComputed, isOperator, stripComputed} from './utils';
 
-export function build(options) {
+export type Relation = {
+  local: string | null;
+  foreign: string | null;
+  from: string;
+  to: string;
+  toAlias?: string;
+  weight?: number;
+};
+
+type Computed = {
+    mapper: boolean;
+    required: string[];
+    result: string[];
+    perform(relative: (name: string, shouldPrefix: boolean) => string): Record<string, any>;
+  };
+
+export type Options = {
+  aliases: Record<string, string>;
+  computed: Record<string, Computed>;
+  limit?: number;
+  projection?: any;
+  query?: any;
+  relations: Relation[];
+  skip?: number;
+  sort?: any;
+  start: string;
+  typeMap?: Record<string, string>;
+};
+
+type Step = {
+  group?: any;
+  limit?: number;
+  match?: any;
+  projection?: any;
+  relation?: Relation;
+  skip?: number;
+  sort?: any;
+}
+
+export function build(options: Options) {
     return translate(options.start, prepare(options));
 }
 
 // eslint-disable-next-line complexity
-export function prepare({aliases = {}, computed, limit, projection, query, relations = [], skip, sort, start}) {
+export function prepare({aliases = {}, computed, limit, projection, query, relations = [], skip, sort, start}: Options) {
     const relative = getNameRelative.bind(null, `${start}.`);
 
-    const steps = [];
+    const steps: Step[] = [];
 
     const joined = [start];
-    const mapped = [
+    const mapped = ([
         ...(projection ? Object.values(projection) : []),
         ...(query ? Object.keys(query).filter(field => !isOperator(field)) : []),
         ...(sort ? Object.keys(sort) : [])
-    ]
+    ] as string[])
         .map(getNameCollection)
         .filter(Boolean);
 
     const isBaseSort = !!sort && Object.keys(sort).every(field => field.startsWith(start));
 
     if (computed) {
-        const expanded = {};
+        const expanded: Record<string, any> = {};
 
         let $ = 0;
         while (++$ < 100) {
-            const toExpand = mapped.findIndex(field => isComputed(field) && !expanded[stripComputed(field)]);
-            if (toExpand === -1) break;
+            const toExpand = mapped.find(field => field && isComputed(field) && !expanded[stripComputed(field)]);
+            if (toExpand === undefined) break;
 
-            const name = stripComputed(mapped[toExpand]);
+            const name = stripComputed(toExpand);
             if (computed[name] === undefined) throw new Error(`Invalid computed field name: "${name}".`);
 
-            mapped.push(...computed[name].required.map(getNameCollection));
+            mapped.push(...computed[name].required.map(getNameCollection).filter(Boolean) as string[]);
             expanded[name] = true;
         }
     }
@@ -101,28 +140,28 @@ export function prepare({aliases = {}, computed, limit, projection, query, relat
     function inlineGroup() {
         const toCompute = needed
             .filter(name => isComputed(name) && !joined.includes(name))
-            .map(name => [name, computed[stripComputed(name)]])
+            .map(name => [name, computed[stripComputed(name)]] as [string, Computed])
             .filter(definition => definition[1].required.every(field => joined.includes(getNameCollection(field))));
 
         if (toCompute.length !== 0) {
             toCompute.forEach(([name, definition]) => {
                 const isAbsolute = steps.some(step => 'group' in step || 'projection' in step);
-                function addMappedFields(object, field) {
+                function addMappedFields(object: Record<string, any>, field: string | number) {
+                        if (typeof projection?.[field] === 'string') {
                     if (definition.mapper) {
-                        if (typeof projection[field] === 'string') {
                             projection[field]
                                 .replace(/^\$/, '')
                                 .split('.')
                                 .slice(1, -1)
-                                .forEach((_, index, parts) => {
-                                    object[parts.slice(0, index + 1)] = 1;
+                                .forEach((_: any, index: any, parts: any) => {
+                                    object[parts.slice(0, index + 1).join('.')] = 1;
                                 });
-                        }
 
                         object[field] = 1;
                     } else {
                         object[field] = {$first: isAbsolute ? `$${field}` : relative(projection[field], true)};
                     }
+                        }
                     return object;
                 }
 
@@ -141,7 +180,7 @@ export function prepare({aliases = {}, computed, limit, projection, query, relat
                                   const field = relative(collection, false);
                                   if (!field) return object;
 
-                                  return addMappedFields(object, field);
+                                  return addMappedFields(object as any, field);
                               }, {})
                             : {},
                         definition.perform(relative)
@@ -167,12 +206,12 @@ export function prepare({aliases = {}, computed, limit, projection, query, relat
         )
             return;
 
-        if (skip > 0) {
+        if (skip && skip > 0) {
             steps.push({skip});
             skip = undefined;
         }
 
-        if (limit > 0) {
+        if (limit && limit > 0) {
             steps.push({limit});
             limit = undefined;
         }
@@ -184,12 +223,12 @@ export function prepare({aliases = {}, computed, limit, projection, query, relat
         const available = Object.keys(query).filter(
             key =>
                 isOperator(key)
-                    ? query[key].required.every(key => joined.includes(getNameCollection(key)))
+                    ? query[key].required.every((key: string) => joined.includes(getNameCollection(key)))
                     : joined.includes(getNameCollection(key))
         );
 
         if (available.length) {
-            const match = {};
+            const match: Record<string, any> = {};
 
             available.forEach(field => {
                 match[relative(field, false)] = isOperator(field) ? query[field].perform(relative) : query[field];
@@ -201,7 +240,7 @@ export function prepare({aliases = {}, computed, limit, projection, query, relat
         }
     }
 
-    function inlineRelation(relation) {
+    function inlineRelation(relation: Relation) {
         joined.push(relation.to);
 
         steps.push({
@@ -246,35 +285,35 @@ export function prepare({aliases = {}, computed, limit, projection, query, relat
 }
 
 const translateOperators = {
-    group: (start, step) => [{$group: step.group}],
-    limit: (start, step) => [{$limit: step.limit}],
-    match: (start, step) => [{$match: step.match}],
-    projection: (start, step) => [{$project: step.projection}],
-    relation: (start, step) => [
+    group: (start: string, step: Step) => [{$group: step.group}],
+    limit: (start: string, step: Step) => [{$limit: step.limit}],
+    match: (start: string, step: Step) => [{$match: step.match}],
+    projection: (start: string, step: Step) => [{$project: step.projection}],
+    relation: (start: string, step: Step) => [
         {
             $lookup: {
-                as: getNameRelative(start, step.relation.to, false),
-                foreignField: step.relation.foreign,
-                from: step.relation.toAlias,
-                localField: step.relation.local
+                as: getNameRelative(start, step.relation!.to, false),
+                foreignField: step.relation!.foreign,
+                from: step.relation!.toAlias,
+                localField: step.relation!.local
             }
         },
         {
             $unwind: {
-                path: getNameRelative(start, step.relation.to, true),
+                path: getNameRelative(start, step.relation!.to, true),
                 preserveNullAndEmptyArrays: true
             }
         }
     ],
-    skip: (start, step) => [{$skip: step.skip}],
-    sort: (start, step) => [{$sort: step.sort}]
+    skip: (start: string, step: Step) => [{$skip: step.skip}],
+    sort: (start: string, step: Step) => [{$sort: step.sort}]
 };
 
-export function translate(start, steps) {
+export function translate(start: string, steps: Step[]) {
     const pipeline = [];
 
     for (const step of steps) {
-        const operators = Object.keys(step);
+        const operators = Object.keys(step) as (keyof Step)[];
         if (operators.length !== 1) {
             throw new Error(`Invalid step: ${JSON.stringify(step)}`);
         }

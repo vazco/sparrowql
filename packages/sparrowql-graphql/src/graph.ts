@@ -1,24 +1,30 @@
-import {visit} from 'graphql/language';
+import { visit, ASTNode, FieldDefinitionNode, TypeNode, NamedTypeNode } from 'graphql/language';
+import { GraphQLResolveInfo } from 'graphql/type';
 
-import {build} from 'sparrowql';
+import { build, Options, Relation } from 'sparrowql';
+import { GraphQLType } from 'graphql';
 
-function extractType(type) {
-    return type.ofType ? extractType(type.ofType) : type;
+function extractType(type: GraphQLType): GraphQLType {
+  return 'ofType' in type ? extractType(type.ofType) : type;
 }
 
-function extractTypeAST(type) {
-    return type.kind === 'ListType' || type.kind === 'NonNullType' ? extractTypeAST(type.type) : type;
+function isNamedTypeNode(type: FieldDefinitionNode | TypeNode): type is NamedTypeNode {
+  return type.kind === 'NamedType';
 }
 
-export function astToOptions(schemaAST, {directiveCollection = 'collection', directiveRelation = 'relationTo'} = {}) {
+function extractTypeAST(type: FieldDefinitionNode | TypeNode): NamedTypeNode {
+  return isNamedTypeNode(type) ? type : extractTypeAST(type.type);
+}
+
+export function astToOptions(schemaAST: ASTNode, {directiveCollection = 'collection', directiveRelation = 'relationTo'} = {}) {
     // Local mappings.
-    const collection2type = {};
-    const type2collection = {};
+    const collection2type: Record<string, string> = {};
+    const type2collection: Record<string, string> = {};
 
     // Standard options.
-    const collections = [];
-    const relations = [];
-    const typeMap = {};
+    const collections: string[] = [];
+    const relations: Relation[] = [];
+    const typeMap: Record<string, string> = {};
 
     visit(schemaAST, {
         FieldDefinition(node) {
@@ -30,13 +36,14 @@ export function astToOptions(schemaAST, {directiveCollection = 'collection', dir
                     foreign: null,
                     from: collections[0],
                     local: null,
-                    to: type2collection[node.type.type.name.value]
+                    to: type2collection[(node.type as any).type.name.value] // Typings do not match for NamedType
                 };
 
-                for (const {name, value} of directive.arguments) {
-                    if (name.value === 'as') relation.to = value.value;
-                    else if (name.value === 'foreign') relation.foreign = value.value;
-                    else if (name.value === 'local') relation.local = value.value;
+                for (const {name, value} of directive.arguments ?? []) {
+                    // Typings do not match for VariableNode\
+                    if (name.value === 'as') relation.to = (value as any).value;
+                    else if (name.value === 'foreign') relation.foreign = (value as any).value;
+                    else if (name.value === 'local') relation.local = (value as any).value;
                 }
 
                 relations.push(relation);
@@ -48,19 +55,21 @@ export function astToOptions(schemaAST, {directiveCollection = 'collection', dir
         },
         ObjectTypeDefinition(node) {
             if (node.name.value === 'Query')
-                for (const field of node.fields)
+                for (const field of node.fields ?? [])
                     typeMap[`Query.${field.name.value}`] = type2collection[extractTypeAST(field.type).name.value];
 
             if (!node.directives || node.directives.length === 0) return false;
             for (const directive of node.directives) {
                 if (directive.name.value !== directiveCollection) continue;
 
-                for (const argument of directive.arguments) {
+                for (const argument of directive.arguments ?? []) {
                     if (argument.name.value !== 'name') continue;
 
-                    type2collection[node.name.value] = argument.value.value;
-                    collection2type[argument.value.value] = node.name.value;
-                    collections.unshift(argument.value.value);
+                    // Typings do not match for VariableNode
+                    const argumentValue = (argument.value as any).value;
+                    type2collection[node.name.value] = argumentValue;
+                    collection2type[argumentValue] = node.name.value;
+                    collections.unshift(argumentValue);
 
                     return undefined;
                 }
@@ -73,13 +82,13 @@ export function astToOptions(schemaAST, {directiveCollection = 'collection', dir
     return {collections, relations, typeMap};
 }
 
-export function astToPipeline(info, options) {
-    const scopes = [];
-    const inflateMap = {};
-    const projection = {};
+export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
+    const scopes: string[] = [];
+    const inflateMap: Record<string, {}> = {};
+    const projection: any = {};
 
-    const rootType = extractType(info.schema.getQueryType());
-    const extractPathType = path =>
+    const rootType = extractType(info.schema.getQueryType()!);
+    const extractPathType = (path: any[]) =>
         path.reduce((node, field) => extractType(node.getFields()[field].type), rootType).name;
 
     visit(info.operation, {
@@ -95,11 +104,11 @@ export function astToPipeline(info, options) {
                 const y = scopes.length === 1 ? [] : scopes.slice(0, -1);
                 const x = `${extractPathType(y)}.${scope}`;
 
-                projection[target] = `${options.typeMap[x]}.${field}`;
+                projection[target] = `${options.typeMap?.[x]}.${field}`;
 
                 let position = inflateMap;
                 while (path.length > 1) {
-                    const part = path.shift();
+                    const part = path.shift()!;
                     if (position[part] === undefined) {
                         position[part] = {};
                     }

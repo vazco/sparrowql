@@ -1,9 +1,12 @@
 {
   "compilerOptions": {
+    "baseUrl": "packages",
     "composite": true,
     "declaration": true,
-    "lib": ["ESNext"],
+    "importHelpers": true,
+    "lib": ["es2017", "esnext.asynciterable"],
     "module": "commonjs",
-    "target": "es6"
+    "strict": true,
+    "target": "es2017"
   }
 }

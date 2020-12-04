@@ -2,8 +2,8 @@
   "name": "sparrowql-graphql",
   "version": "0.3.3",
   "license": "MIT",
-  "main": "build/lib/index.js",
-  "types": "build/lib/index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "description": "GraphQL interface for SparrowQL.",
   "repository": "https://github.com/vazco/sparrowql/tree/master/packages/sparrowql-graphql",
   "bugs": "https://github.com/vazco/sparrowql/issues",
@@ -14,14 +14,11 @@
     "mongodb"
   ],
   "dependencies": {
-    "graphql": "^14.0.0",
+    "graphql": "^15.0.0",
     "sparrowql": "file:../sparrowql"
   },
   "engines": {
     "node": ">=8"
   },
-  "scripts": {
-    "preversion": "tsc",
-    "tsc": "tsc"
-  }
+  "devDependencies": {}
 }
