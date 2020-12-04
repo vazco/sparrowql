@@ -71,7 +71,7 @@ export function prepare({aliases = {}, computed, limit, projection, query, relat
             const name = stripComputed(toExpand);
             if (computed[name] === undefined) throw new Error(`Invalid computed field name: "${name}".`);
 
-            mapped.push(...computed[name].required.map(getNameCollection).filter(Boolean) as string[]);
+            mapped.push(...computed[name].required.map(getNameCollection) as string[]);
             expanded[name] = true;
         }
     }
