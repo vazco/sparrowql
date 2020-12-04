@@ -40,7 +40,7 @@ export function astToOptions(schemaAST: ASTNode, {directiveCollection = 'collect
                 };
 
                 for (const {name, value} of directive.arguments ?? []) {
-                    // Typings do not match for VariableNode\
+                    // Typings do not match for VariableNode
                     if (name.value === 'as') relation.to = (value as any).value;
                     else if (name.value === 'foreign') relation.foreign = (value as any).value;
                     else if (name.value === 'local') relation.local = (value as any).value;

@@ -7,7 +7,7 @@
     "lint:code": "eslint .",
     "lint:types": "tsc --build tsconfig.global.json",
     "build": "tsc --build tsconfig.build.json",
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna bootstrap && npm run build",
     "test": "jest"
   },
   "dependencies": {
