@@ -52,20 +52,20 @@ export function getNameCollection(name: number): undefined;
 export function getNameCollection(name: object): undefined;
 export function getNameCollection(name: string): string;
 export function getNameCollection(name: number | object | string): string | undefined {
-    if (name === 0 || name === 1) return undefined;
-    if (typeof name === 'object') return undefined;
+  if (name === 0 || name === 1) return undefined;
+  if (typeof name === 'object') return undefined;
 
-    if (typeof name === 'string') {
-      return name.split('.', 2)[0];
-    }
+  if (typeof name === 'string') {
+    return name.split('.', 2)[0];
+  }
 
-    return undefined;
+  return undefined;
 }
 
 export function getNameRelative(prefix: string, name: object, isPath: boolean): object;
 export function getNameRelative(prefix: string, name: string | number, isPath: boolean): string;
 export function getNameRelative(prefix: string, name: string | number | object, isPath: boolean): string | object {
-    if (name === 0 || name === 1) return name.toString();
+    if (name === 0 || name === 1) return name as any;
     if (typeof name === 'object') return name;
     if (typeof name === 'string') {
       if (isOperator(name)) return name;
@@ -81,7 +81,7 @@ export function getNameRelative(prefix: string, name: string | number | object, 
       }
     }
 
-    return isPath ? `$${name}` : name.toString();
+  return isPath ? `$${name}` : name as any;
 }
 
 export function isComputed(field: string) {
