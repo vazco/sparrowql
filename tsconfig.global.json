@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "tsBuildInfoFile": "node_modules/.cache/global.tsbuildinfo"
+  },
+  "references": [
+    { "path": "packages/sparrowql/tsconfig.json" },
+    { "path": "packages/sparrowql-graphql/tsconfig.json" }
+  ]
+}

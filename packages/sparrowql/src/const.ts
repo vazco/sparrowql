@@ -1,0 +1,2 @@
+export const PREFIX_COMPUTED = 'SPARROW_COMPUTED$';
+export const PREFIX_JOINED = 'SPARROW_JOINED_';
