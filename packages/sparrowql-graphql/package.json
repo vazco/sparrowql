@@ -19,6 +19,5 @@
   },
   "engines": {
     "node": ">=8"
-  },
-  "devDependencies": {}
+  }
 }
