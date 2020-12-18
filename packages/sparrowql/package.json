@@ -14,5 +14,8 @@
   ],
   "engines": {
     "node": ">=8"
+  },
+  "devDependencies": {
+    "@types/mongodb": "^3.6.3"
   }
 }
