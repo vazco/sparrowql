@@ -1,6 +1,10 @@
 import { closestPath, getNameCollection, getNameRelative, isComputed, isOperator, stripComputed } from './utils';
 import { FilterQuery, ProjectionOperators, SchemaMember, SortOptionObject } from 'mongodb';
 
+type SortType = Record<string, 0 | 1>;
+type ProjectionType = Record<string, unknown>;
+type QueryType = Record<string, unknown>;
+
 export type Relation = {
   local: string | null;
   foreign: string | null;
@@ -17,38 +21,36 @@ type Computed = {
   perform(relative: (name: string, shouldPrefix: boolean) => string): Record<string, any>;
 };
 
-export type Options<T> = {
+export type Options = {
   aliases: Record<string, string>;
   computed: Record<string, Computed>;
   limit?: number;
-  projection?: SchemaMember<T, ProjectionOperators | number | boolean | any>;
-  query?: FilterQuery<T>;
+  projection?: ProjectionType;
+  query?: QueryType;
   relations: Relation[];
   skip?: number;
-  sort?: SortOptionObject<T>;
+  sort?: SortType;
   start: string;
   typeMap?: Record<string, string>;
 };
 
-type Step<T> = {
-  group?: any;
-  limit?: number;
-  match?: FilterQuery<T>;
-  projection?: SchemaMember<T, ProjectionOperators | number | boolean | any>;
-  relation?: Relation;
-  skip?: number;
-  sort?: SortOptionObject<T>;
-}
+type Step = {group: object }
+| {limit: number }
+| {match: object }
+| {projection: ProjectionType }
+| {relation: Relation }
+| {skip: number }
+| {sort: SortType };
 
-export function build<T = {}>(options: Options<T>) {
+export function build(options: Options) {
   return translate(options.start, prepare(options));
 }
 
 // eslint-disable-next-line complexity
-export function prepare<T = {}>({aliases = {}, computed, limit, projection, query, relations = [], skip, sort, start}: Options<T>) {
+export function prepare({aliases = {}, computed, limit, projection, query, relations = [], skip, sort, start}: Options) {
   const relative = getNameRelative.bind(null, `${start}.`);
 
-  const steps: Step<T>[] = [];
+  const steps: Step[] = [];
 
   const joined = [start];
   const mapped = ([
@@ -130,7 +132,7 @@ export function prepare<T = {}>({aliases = {}, computed, limit, projection, quer
   if (projection) {
     steps.push({
       projection: Object.keys(projection).reduce(
-        (object, field) => Object.assign(object, {[field]: relative(projection[field as keyof typeof projection], true)}),
+        (object, field: keyof typeof projection) => Object.assign(object, {[field]: relative(projection[field], true)}),
         {}
       )
     });
@@ -151,7 +153,7 @@ export function prepare<T = {}>({aliases = {}, computed, limit, projection, quer
         function addMappedFields(object: Record<string, any>, field: string | number) {
           if (typeof projection?.[field] === 'string') {
             if (definition.mapper) {
-              projection[field]
+              (projection[field] as string)
                 .replace(/^\$/, '')
                 .split('.')
                 .slice(1, -1)
@@ -230,7 +232,7 @@ export function prepare<T = {}>({aliases = {}, computed, limit, projection, quer
     );
 
     if (available.length) {
-      const match: FilterQuery<T> = {};
+      const match: object = {};
 
       available.forEach(field => {
         match[relative(field, false)] = isOperator(field) ? query[field].perform(relative) : query[field];
@@ -285,13 +287,13 @@ export function prepare<T = {}>({aliases = {}, computed, limit, projection, quer
     }
   }
 }
-
-const translateOperators: Record<'group' | 'limit' | 'match' | 'projection' | 'relation' | 'skip' | 'sort', <T>(start: string, step: Step<T>) => any> = {
-  group: <T = {}>(start: string, step: Step<T>) => [{$group: step.group}],
-  limit: <T = {}>(start: string, step: Step<T>) => [{$limit: step.limit}],
-  match: <T = {}>(start: string, step: Step<T>) => [{$match: step.match}],
-  projection: <T = {}>(start: string, step: Step<T>) => [{$project: step.projection}],
-  relation: <T = {}>(start: string, step: Step<T>) => [
+type KeysOfUnion<T> = T extends any ? keyof T : never;
+const translateOperators: Record<KeysOfUnion<Step>, (start: string, step: Step) => object[]> = {
+  group: (start, step) => [{$group: step.group}],
+  limit: (start, step) => [{$limit: step.limit}],
+  match: (start, step) => [{$match: step.match}],
+  projection: (start, step) => [{$project: step.projection}],
+  relation: (start, step) => [
     {
       $lookup: {
         as: getNameRelative(start, step.relation!.to, false),
@@ -307,15 +309,15 @@ const translateOperators: Record<'group' | 'limit' | 'match' | 'projection' | 'r
       }
     }
   ],
-  skip: <T = {}>(start: string, step: Step<T>) => [{$skip: step.skip}],
-  sort: <T = {}>(start: string, step: Step<T>) => [{$sort: step.sort}]
+  skip: (start, step) => [{$skip: step.skip}],
+  sort: (start, step) => [{$sort: step.sort}]
 };
 
-export function translate <T = {}>(start: string, steps: Step<T>[]) {
+export function translate <T = {}>(start: string, steps: Step[]) {
   const pipeline = [];
 
   for (const step of steps) {
-    const operators = Object.keys(step) as (keyof Step<T>)[];
+    const operators = Object.keys(step) as (keyof Step)[];
     if (operators.length !== 1) {
       throw new Error(`Invalid step: ${JSON.stringify(step)}`);
     }
