@@ -2,7 +2,7 @@
   "env": {
     "jest": true
   },
-  "extends": "vazco/prettier",
+  "extends": "vazco/typescript",
   "root": true,
   "globals": {
     "testWithNCollections": false
