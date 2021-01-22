@@ -67,10 +67,10 @@ export function closestPathBFS(
 }
 
 export function getNameCollection(name: number): undefined;
-export function getNameCollection(name: object): undefined;
+export function getNameCollection(name: Record<string, unknown>): undefined;
 export function getNameCollection(name: string): string;
 export function getNameCollection(
-  name: number | object | string,
+  name: number | Record<string, unknown> | string,
 ): string | undefined {
   if (name === 0 || name === 1) {
     return undefined;
@@ -88,9 +88,9 @@ export function getNameCollection(
 
 export function getNameRelative(
   prefix: string,
-  name: object,
+  name: Record<string, unknown>,
   isPath: boolean,
-): object;
+): Record<string, unknown>;
 export function getNameRelative(
   prefix: string,
   name: string | number,
@@ -98,11 +98,11 @@ export function getNameRelative(
 ): string;
 export function getNameRelative(
   prefix: string,
-  name: string | number | object,
+  name: string | number | Record<string, unknown>,
   isPath: boolean,
-): string | object {
+): string | Record<string, unknown> | number {
   if (name === 0 || name === 1) {
-    return name as any;
+    return name;
   }
   if (typeof name === 'object') {
     return name;
@@ -120,7 +120,7 @@ export function getNameRelative(
     }
   }
 
-  return isPath ? `$${name}` : (name as any);
+  return isPath ? `$${name}` : name;
 }
 
 export function isComputed(field: string) {

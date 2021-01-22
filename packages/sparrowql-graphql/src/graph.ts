@@ -1,4 +1,13 @@
-import { GraphQLType } from 'graphql';
+import {
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLType,
+  ListValueNode,
+  NullValueNode,
+  ObjectValueNode,
+  ValueNode,
+  VariableNode,
+} from 'graphql';
 import {
   visit,
   ASTNode,
@@ -8,6 +17,12 @@ import {
 } from 'graphql/language';
 import { GraphQLResolveInfo } from 'graphql/type';
 import { build, Options, Relation } from 'sparrowql';
+
+// TODO: Improve typings
+type ValueNodeWithValue = Exclude<
+  ValueNode,
+  VariableNode | NullValueNode | ListValueNode | ObjectValueNode
+>;
 
 function extractType(type: GraphQLType): GraphQLType {
   return 'ofType' in type ? extractType(type.ofType) : type;
@@ -46,21 +61,23 @@ export function astToOptions(
           continue;
         }
 
-        const relation = {
+        const relation: Relation = {
           foreign: null,
           from: collections[0],
           local: null,
-          to: type2collection[(node.type as any).type.name.value], // Typings do not match for NamedType
+          // TODO: Typings do not match for NamedType
+          // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-unsafe-member-access
+          to: type2collection[(node.type as any).type.name.value as string],
         };
 
         for (const { name, value } of directive.arguments ?? []) {
           // Typings do not match for VariableNode
           if (name.value === 'as') {
-            relation.to = (value as any).value;
+            relation.to = (value as ValueNodeWithValue).value.toString();
           } else if (name.value === 'foreign') {
-            relation.foreign = (value as any).value;
+            relation.foreign = (value as ValueNodeWithValue).value.toString();
           } else if (name.value === 'local') {
-            relation.local = (value as any).value;
+            relation.local = (value as ValueNodeWithValue).value.toString();
           }
         }
 
@@ -94,7 +111,7 @@ export function astToOptions(
           }
 
           // Typings do not match for VariableNode
-          const argumentValue = (argument.value as any).value;
+          const argumentValue = (argument.value as ValueNodeWithValue).value.toString();
           type2collection[node.name.value] = argumentValue;
           collection2type[argumentValue] = node.name.value;
           collections.unshift(argumentValue);
@@ -112,15 +129,16 @@ export function astToOptions(
 
 export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
   const scopes: string[] = [];
-  const inflateMap: Record<string, {}> = {};
-  const projection: any = {};
+  const inflateMap: Record<string, unknown> = {};
+  const projection: Record<string, unknown> = {};
 
   const rootType = extractType(info.schema.getQueryType()!);
-  const extractPathType = (path: any[]) =>
-    path.reduce(
-      (node, field) => extractType(node.getFields()[field].type),
+  const extractPathType = (path: string[]) =>
+    (path.reduce(
+      (node, field) =>
+        extractType((node as GraphQLObjectType).getFields()[field].type),
       rootType,
-    ).name;
+    ) as GraphQLScalarType).name;
 
   visit(info.operation, {
     Field(node) {
@@ -135,7 +153,7 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
         const y = scopes.length === 1 ? [] : scopes.slice(0, -1);
         const x = `${extractPathType(y)}.${scope}`;
 
-        projection[target] = `${options.typeMap?.[x]}.${field}`;
+        projection[target] = `${options.typeMap?.[x] ?? ''}.${field}`;
 
         let position = inflateMap;
         while (path.length > 1) {
@@ -144,7 +162,7 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
             position[part] = {};
           }
 
-          position = position[part];
+          position = position[part] as Record<string, unknown>;
         }
 
         position[path[0]] = `$${target}`;
@@ -158,6 +176,6 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
   });
 
   return build({ ...options, projection }).concat({
-    $project: inflateMap[info.fieldName],
+    $project: inflateMap[info.fieldName] as Record<string, unknown>,
   });
 }

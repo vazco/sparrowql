@@ -25,12 +25,23 @@ type Computed = {
   ): Record<string, any>;
 };
 
+// TODO: https://github.com/vazco/sparrowql/issues/23
+type RequiredQuery = {
+  required: string[];
+};
+
+type PerformQuery = {
+  perform(
+    relative: (name: string, shouldPrefix: boolean) => string,
+  ): Record<string, any>;
+};
+
 export type Options = {
   aliases: Record<string, string>;
   computed: Record<string, Computed>;
   limit?: number;
-  projection?: any;
-  query?: any;
+  projection?: Record<string, unknown>;
+  query?: Record<string, unknown>;
   relations: Relation[];
   skip?: number;
   sort?: any;
@@ -39,13 +50,13 @@ export type Options = {
 };
 
 type Step = {
-  group?: any;
+  group?: unknown;
   limit?: number;
-  match?: any;
-  projection?: any;
+  match?: unknown;
+  projection?: Record<string, unknown>;
   relation?: Relation;
   skip?: number;
-  sort?: any;
+  sort?: Record<string, 0 | 1>;
 };
 
 export function build(options: Options) {
@@ -196,7 +207,9 @@ export function prepare({
     steps.push({
       projection: Object.keys(projection).reduce(
         (object, field) =>
-          Object.assign(object, { [field]: relative(projection[field], true) }),
+          Object.assign(object, {
+            [field]: relative(projection[field] as string, true),
+          }),
         {},
       ),
     });
@@ -225,11 +238,11 @@ export function prepare({
         ) {
           if (typeof projection?.[field] === 'string') {
             if (definition.mapper) {
-              projection[field]
+              (projection[field] as string)
                 .replace(/^\$/, '')
                 .split('.')
                 .slice(1, -1)
-                .forEach((_: any, index: any, parts: any) => {
+                .forEach((_, index, parts) => {
                   object[parts.slice(0, index + 1).join('.')] = 1;
                 });
 
@@ -238,7 +251,7 @@ export function prepare({
               object[field] = {
                 $first: isAbsolute
                   ? `$${field}`
-                  : relative(projection[field], true),
+                  : relative(projection[field] as string, true),
               };
             }
           }
@@ -313,7 +326,7 @@ export function prepare({
 
     const available = Object.keys(query).filter(key =>
       isOperator(key)
-        ? query[key].required.every((key: string) =>
+        ? (query[key] as RequiredQuery).required.every(key =>
             joined.includes(getNameCollection(key)),
           )
         : joined.includes(getNameCollection(key)),
@@ -324,7 +337,7 @@ export function prepare({
 
       available.forEach(field => {
         match[relative(field, false)] = isOperator(field)
-          ? query[field].perform(relative)
+          ? (query[field] as PerformQuery).perform(relative)
           : query[field];
         delete query[field];
       });
