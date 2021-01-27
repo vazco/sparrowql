@@ -56,7 +56,7 @@ type Step = {
   projection?: Record<string, unknown>;
   relation?: Relation;
   skip?: number;
-  sort?: Record<string, 0 | 1>;
+  sort?: Record<string, -1 | 1>;
 };
 
 export function build(options: Options) {
@@ -192,6 +192,7 @@ export function prepare({
         )[0],
       );
     } else {
+      // TODO: Fix formatting
       steps.splice(
         indexMatch + 2,
         0,
