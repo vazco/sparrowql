@@ -174,33 +174,16 @@ export function prepare({
       steps[steps.findIndex(step => 'sort' in step)],
     );
 
+    const wrapAtPhase = (index: number, stepName: 'limit' | 'skip') => {
+      const pivot = steps.findIndex(step => stepName in step);
+      steps.splice(index, 0, steps.splice(pivot, 1)[0]);
+    };
+
     if (steps.some(step => 'skip' in step)) {
-      steps.splice(
-        indexMatch + 2,
-        0,
-        steps.splice(
-          steps.findIndex(step => 'skip' in step),
-          1,
-        )[0],
-      );
-      steps.splice(
-        indexMatch + 3,
-        0,
-        steps.splice(
-          steps.findIndex(step => 'limit' in step),
-          1,
-        )[0],
-      );
+      wrapAtPhase(indexMatch + 2, 'skip');
+      wrapAtPhase(indexMatch + 3, 'limit');
     } else {
-      // TODO: Fix formatting
-      steps.splice(
-        indexMatch + 2,
-        0,
-        steps.splice(
-          steps.findIndex(step => 'limit' in step),
-          1,
-        )[0],
-      );
+      wrapAtPhase(indexMatch + 2, 'limit');
     }
   }
 
