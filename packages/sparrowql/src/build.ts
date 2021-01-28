@@ -7,9 +7,19 @@ import {
   stripComputed,
 } from './utils';
 
-type SortType = Record<string, 0 | 1>;
-type ProjectionType = Record<string, unknown>;
-type QueryType = Record<string, unknown>;
+type MongoQuery = {
+  required: string[];
+};
+
+type PerformQuery = {
+  perform(
+    relative: (name: string, shouldPrefix: boolean) => string,
+  ): Record<string, any>;
+};
+
+type SortType = Record<string, -1 | 1>;
+export type ProjectionType = Record<string, string>;
+export type QueryType = Record<string, MongoQuery | PerformQuery>;
 
 export type Relation = {
   local: string | null;
@@ -29,23 +39,12 @@ type Computed = {
   ): Record<string, any>;
 };
 
-// TODO: https://github.com/vazco/sparrowql/issues/23
-type RequiredQuery = {
-  required: string[];
-};
-
-type PerformQuery = {
-  perform(
-    relative: (name: string, shouldPrefix: boolean) => string,
-  ): Record<string, any>;
-};
-
 export type Options = {
   aliases: Record<string, string>;
   computed: Record<string, Computed>;
   limit?: number;
-  projection?: Record<string, unknown>;
-  query?: Record<string, unknown>;
+  projection?: ProjectionType;
+  query?: QueryType;
   relations: Relation[];
   skip?: number;
   sort?: SortType;
@@ -53,13 +52,22 @@ export type Options = {
   typeMap?: Record<string, string>;
 };
 
-type Step = {group: object }
-  | {limit: number }
-  | {match: object }
-  | {projection: ProjectionType }
-  | {relation: Relation }
-  | {skip: number }
-  | {sort: SortType };
+type GroupStep = { group: unknown };
+type LimitStep = { limit: number };
+type MatchStep = { match: unknown };
+type ProjectionStep = { projection: ProjectionType };
+type RelationStep = { relation: Relation };
+type SkipStep = { skip: number };
+type SortStep = { sort: SortType };
+
+type Step =
+  | GroupStep
+  | LimitStep
+  | MatchStep
+  | ProjectionStep
+  | RelationStep
+  | SkipStep
+  | SortStep;
 
 export function build(options: Options) {
   return translate(options.start, prepare(options));
@@ -82,11 +90,11 @@ export function prepare({
   const steps: Step[] = [];
 
   const joined = [start];
-  const mapped = ([
+  const mapped = [
     ...(projection ? Object.values(projection) : []),
     ...(query ? Object.keys(query).filter(field => !isOperator(field)) : []),
     ...(sort ? Object.keys(sort) : []),
-  ] as string[])
+  ]
     .map(getNameCollection)
     .filter(Boolean);
 
@@ -194,7 +202,7 @@ export function prepare({
       projection: Object.keys(projection).reduce(
         (object, field) =>
           Object.assign(object, {
-            [field]: relative(projection[field] as string, true),
+            [field]: relative(projection[field], true),
           }),
         {},
       ),
@@ -224,7 +232,7 @@ export function prepare({
         ) {
           if (typeof projection?.[field] === 'string') {
             if (definition.mapper) {
-              (projection[field] as string)
+              projection[field]
                 .replace(/^\$/, '')
                 .split('.')
                 .slice(1, -1)
@@ -237,7 +245,7 @@ export function prepare({
               object[field] = {
                 $first: isAbsolute
                   ? `$${field}`
-                  : relative(projection[field] as string, true),
+                  : relative(projection[field], true),
               };
             }
           }
@@ -267,12 +275,13 @@ export function prepare({
                     return object;
                   }
 
-                  return addMappedFields(object as any, field);
+                  return addMappedFields(object, field);
                 }, {})
               : {},
             definition.perform(relative),
           ),
-        });
+          // Typescript inconsistency: https://github.com/Microsoft/TypeScript/issues/13948
+        } as Step);
 
         inlineMatch();
         inlineSort();
@@ -310,21 +319,32 @@ export function prepare({
       return;
     }
 
-    const available = Object.keys(query).filter(key =>
-      isOperator(key)
-        ? (query[key] as RequiredQuery).required.every(key =>
+    const isMongoQuery = (
+      key: string,
+      query: MongoQuery | PerformQuery,
+    ): query is MongoQuery => isOperator(key);
+    const isPerformQuery = (
+      key: string,
+      query: MongoQuery | PerformQuery,
+    ): query is PerformQuery => isOperator(key);
+
+    const available = Object.keys(query).filter(key => {
+      const singleQuery = query[key];
+      return isMongoQuery(key, singleQuery)
+        ? singleQuery.required.every(key =>
             joined.includes(getNameCollection(key)),
           )
-        : joined.includes(getNameCollection(key)),
-    );
+        : joined.includes(getNameCollection(key));
+    });
 
     if (available.length) {
-      const match: Record<string, any> = {};
+      const match: Record<string, unknown> = {};
 
       available.forEach(field => {
-        match[relative(field, false)] = isOperator(field)
-          ? (query[field] as PerformQuery).perform(relative)
-          : query[field];
+        const singleQuery = query[field];
+        match[relative(field, false)] = isPerformQuery(field, singleQuery)
+          ? singleQuery.perform(relative)
+          : singleQuery;
         delete query[field];
       });
 
@@ -380,45 +400,54 @@ export function prepare({
 }
 
 const translateOperators = {
-  group: (start: string, step: Step) => [{ $group: step.group }],
-  limit: (start: string, step: Step) => [{ $limit: step.limit }],
-  match: (start: string, step: Step) => [{ $match: step.match }],
-  projection: (start: string, step: Step) => [{ $project: step.projection }],
-  relation: (start: string, step: Step) => [
+  group: (start: string, step: GroupStep) => [{ $group: step.group }],
+  limit: (start: string, step: LimitStep) => [{ $limit: step.limit }],
+  match: (start: string, step: MatchStep) => [{ $match: step.match }],
+  projection: (start: string, step: ProjectionStep) => [
+    { $project: step.projection },
+  ],
+  relation: (start: string, step: RelationStep) => [
     {
       $lookup: {
-        as: getNameRelative(start, step.relation!.to, false),
-        foreignField: step.relation!.foreign,
-        from: step.relation!.toAlias,
-        localField: step.relation!.local,
+        as: getNameRelative(start, step.relation.to, false),
+        foreignField: step.relation.foreign,
+        from: step.relation.toAlias,
+        localField: step.relation.local,
       },
     },
     {
       $unwind: {
-        path: getNameRelative(start, step.relation!.to, true),
+        path: getNameRelative(start, step.relation.to, true),
         preserveNullAndEmptyArrays: true,
       },
     },
   ],
-  skip: (start: string, step: Step) => [{ $skip: step.skip }],
-  sort: (start: string, step: Step) => [{ $sort: step.sort }],
+  skip: (start: string, step: SkipStep) => [{ $skip: step.skip }],
+  sort: (start: string, step: SortStep) => [{ $sort: step.sort }],
 };
 
 export function translate(start: string, steps: Step[]) {
   const pipeline = [];
 
   for (const step of steps) {
-    const operators = Object.keys(step) as (keyof Step)[];
+    const operators = Object.keys(step);
     if (operators.length !== 1) {
       throw new Error(`Invalid step: ${JSON.stringify(step)}`);
     }
 
+    const hasOwnProperty = (
+      mapFunctions: typeof translateOperators,
+      operator: string,
+    ): operator is keyof typeof mapFunctions => {
+      return operator in mapFunctions;
+    };
+
     const operator = operators[0];
-    if (!(operator in translateOperators)) {
+    if (!hasOwnProperty(translateOperators, operator)) {
       throw new Error(`Unknown operator: ${operator}`);
     }
 
-    pipeline.push(...translateOperators[operator](start, step));
+    pipeline.push(...translateOperators[operator](start, step as any));
   }
 
   return pipeline;

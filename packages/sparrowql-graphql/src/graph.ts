@@ -16,7 +16,7 @@ import {
   NamedTypeNode,
 } from 'graphql/language';
 import { GraphQLResolveInfo } from 'graphql/type';
-import { build, Options, Relation } from 'sparrowql';
+import { build, Options, ProjectionType, Relation } from 'sparrowql';
 
 // TODO: Improve typings
 type ValueNodeWithValue = Exclude<
@@ -130,7 +130,7 @@ export function astToOptions(
 export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
   const scopes: string[] = [];
   const inflateMap: Record<string, unknown> = {};
-  const projection: Record<string, unknown> = {};
+  const projection: ProjectionType = {};
 
   const rootType = extractType(info.schema.getQueryType()!);
   const extractPathType = (path: string[]) =>
@@ -176,6 +176,6 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
   });
 
   return build({ ...options, projection }).concat({
-    $project: inflateMap[info.fieldName] as Record<string, unknown>,
+    $project: inflateMap[info.fieldName] as ProjectionType,
   });
 }

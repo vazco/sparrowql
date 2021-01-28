@@ -1,11 +1,11 @@
-import { Relation } from './build';
+import { QueryType, Relation } from './build';
 import { PREFIX_COMPUTED, PREFIX_JOINED } from './const';
 
 export function closestPath(
   relations: Relation[],
   starts: Relation[],
   ends: string[],
-  query?: Record<string, any>,
+  query?: QueryType,
 ) {
   let bestCost = Infinity;
   let bestPath: Relation[] = [];
@@ -25,7 +25,7 @@ export function closestPathBFS(
   relations: Relation[],
   start: Relation,
   ends: string[],
-  query?: Record<string, any>,
+  query?: QueryType,
 ): { cost: number; path: Relation[] } {
   const visited = { [start.from]: start };
   const inQuery: string[] = Object.keys(query || {})
