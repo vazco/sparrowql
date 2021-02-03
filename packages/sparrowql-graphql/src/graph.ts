@@ -75,9 +75,9 @@ export function astToOptions(
           if (name.value === 'as') {
             relation.to = value.value.toString();
           } else if (name.value === 'foreign') {
-            relation.foreign = (value as ValueNodeWithValue).value.toString();
+            relation.foreign = value.value.toString();
           } else if (name.value === 'local') {
-            relation.local = (value as ValueNodeWithValue).value.toString();
+            relation.local = value.value.toString();
           }
         }
 
@@ -162,7 +162,7 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
             position[part] = {};
           }
 
-          position = position[part] as ProjectionType;
+          position = position[part];
         }
 
         position[path[0]] = `$${target}`;
@@ -176,6 +176,6 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
   });
 
   return build({ ...options, projection }).concat({
-    $project: inflateMap[info.fieldName] as ProjectionType,
+    $project: inflateMap[info.fieldName],
   });
 }
