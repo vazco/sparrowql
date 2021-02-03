@@ -67,13 +67,13 @@ export function astToOptions(
           local: null,
           // TODO: Typings do not match for NamedType
           // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-unsafe-member-access
-          to: type2collection[(node.type as any).type.name.value as string],
+          to: type2collection[node.type.type.name.value],
         };
 
         for (const { name, value } of directive.arguments ?? []) {
           // Typings do not match for VariableNode
           if (name.value === 'as') {
-            relation.to = (value as ValueNodeWithValue).value.toString();
+            relation.to = value.value.toString();
           } else if (name.value === 'foreign') {
             relation.foreign = (value as ValueNodeWithValue).value.toString();
           } else if (name.value === 'local') {
@@ -129,7 +129,7 @@ export function astToOptions(
 
 export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
   const scopes: string[] = [];
-  const inflateMap: Record<string, unknown> = {};
+  const inflateMap: Record<string, ProjectionType | string> = {};
   const projection: ProjectionType = {};
 
   const rootType = extractType(info.schema.getQueryType()!);
@@ -162,7 +162,7 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
             position[part] = {};
           }
 
-          position = position[part] as Record<string, unknown>;
+          position = position[part] as ProjectionType;
         }
 
         position[path[0]] = `$${target}`;
