@@ -1,10 +1,13 @@
 import {
   GraphQLObjectType,
   GraphQLScalarType,
-  GraphQLType, ListTypeNode,
-  ListValueNode, NonNullTypeNode,
+  GraphQLType,
+  ListTypeNode,
+  ListValueNode,
+  NonNullTypeNode,
   NullValueNode,
-  ObjectValueNode, StringValueNode,
+  ObjectValueNode,
+  StringValueNode,
   ValueNode,
   VariableNode,
 } from 'graphql';
@@ -16,13 +19,13 @@ import {
   NamedTypeNode,
 } from 'graphql/language';
 import { GraphQLResolveInfo } from 'graphql/type';
-import { build, Options, ProjectionType, Relation } from 'sparrowql';
 import { GraphQLOutputType } from 'graphql/type/definition';
+import { build, Options, ProjectionType, Relation } from 'sparrowql';
 
 enum RelationField {
   As = 'as',
   Foreign = 'foreign',
-Local = 'local'
+  Local = 'local',
 }
 
 function extractType(type: GraphQLType): GraphQLType {
@@ -55,7 +58,10 @@ function extractTypeAST(type: FieldDefinitionNode | TypeNode): NamedTypeNode {
   return isNamedTypeNode(type) ? type : extractTypeAST(type.type);
 }
 
-function isStringValueNode(name: string, value: ValueNode): value is StringValueNode {
+function isStringValueNode(
+  name: string,
+  value: ValueNode,
+): value is StringValueNode {
   return Object.values<string>(RelationField).includes(name);
 }
 
@@ -93,7 +99,9 @@ export function astToOptions(
 
         for (const { name, value } of directive.arguments ?? []) {
           if (!isStringValueNode(name.value, value)) {
-            throw new Error(`Directive ${name.value}  argument value must be of string type.`);
+            throw new Error(
+              `Directive ${name.value}  argument value must be of string type.`,
+            );
           }
 
           if (name.value === RelationField.As) {
@@ -135,7 +143,9 @@ export function astToOptions(
           }
 
           if (!isStringValueNode(argument.name.value, argument.value)) {
-            throw new Error(`Directive ${argument.name.value}  argument value must be of string type.`);
+            throw new Error(
+              `Directive ${argument.name.value}  argument value must be of string type.`,
+            );
           }
 
           const argumentValue = argument.value.value;

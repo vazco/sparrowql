@@ -403,9 +403,7 @@ const translateOperators = {
   group: (step: GroupStep) => [{ $group: step.group }],
   limit: (step: LimitStep) => [{ $limit: step.limit }],
   match: (step: MatchStep) => [{ $match: step.match }],
-  projection: (step: ProjectionStep) => [
-    { $project: step.projection },
-  ],
+  projection: (step: ProjectionStep) => [{ $project: step.projection }],
   relation: (step: RelationStep, start: string) => [
     {
       $lookup: {
