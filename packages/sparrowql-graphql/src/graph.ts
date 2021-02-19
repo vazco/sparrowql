@@ -1,10 +1,10 @@
 import {
   GraphQLObjectType,
   GraphQLScalarType,
-  GraphQLType,
-  ListValueNode,
+  GraphQLType, ListTypeNode,
+  ListValueNode, NonNullTypeNode,
   NullValueNode,
-  ObjectValueNode,
+  ObjectValueNode, StringValueNode,
   ValueNode,
   VariableNode,
 } from 'graphql';
@@ -17,25 +17,46 @@ import {
 } from 'graphql/language';
 import { GraphQLResolveInfo } from 'graphql/type';
 import { build, Options, ProjectionType, Relation } from 'sparrowql';
+import { GraphQLOutputType } from 'graphql/type/definition';
 
-// TODO: Improve typings
-type ValueNodeWithValue = Exclude<
-  ValueNode,
-  VariableNode | NullValueNode | ListValueNode | ObjectValueNode
->;
+enum RelationField {
+  As = 'as',
+  Foreign = 'foreign',
+Local = 'local'
+}
 
 function extractType(type: GraphQLType): GraphQLType {
   return 'ofType' in type ? extractType(type.ofType) : type;
 }
 
 function isNamedTypeNode(
-  type: FieldDefinitionNode | TypeNode,
-): type is NamedTypeNode {
-  return type.kind === 'NamedType';
+  node: FieldDefinitionNode | TypeNode,
+): node is NamedTypeNode {
+  return node.kind === 'NamedType';
+}
+
+function isNonNullTypeNode(node: TypeNode): node is NonNullTypeNode {
+  return node.kind === 'NonNullType';
+}
+
+function resolveTypeName(node: TypeNode): string {
+  if (isNamedTypeNode(node)) {
+    return node.name.value;
+  }
+
+  if (isNonNullTypeNode(node)) {
+    return resolveTypeName(node.type);
+  }
+
+  return resolveTypeName(node);
 }
 
 function extractTypeAST(type: FieldDefinitionNode | TypeNode): NamedTypeNode {
   return isNamedTypeNode(type) ? type : extractTypeAST(type.type);
+}
+
+function isStringValueNode(name: string, value: ValueNode): value is StringValueNode {
+  return Object.values<string>(RelationField).includes(name);
 }
 
 export function astToOptions(
@@ -61,23 +82,26 @@ export function astToOptions(
           continue;
         }
 
+        const targetNodeName = resolveTypeName(node.type);
+
         const relation: Relation = {
           foreign: null,
           from: collections[0],
           local: null,
-          // TODO: Typings do not match for NamedType
-          // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-unsafe-member-access
-          to: type2collection[node.type.type.name.value],
+          to: type2collection[targetNodeName],
         };
 
         for (const { name, value } of directive.arguments ?? []) {
-          // Typings do not match for VariableNode
-          if (name.value === 'as') {
-            relation.to = value.value.toString();
-          } else if (name.value === 'foreign') {
-            relation.foreign = value.value.toString();
-          } else if (name.value === 'local') {
-            relation.local = value.value.toString();
+          if (!isStringValueNode(name.value, value)) {
+            throw new Error(`Directive ${name.value}  argument value must be of string type.`);
+          }
+
+          if (name.value === RelationField.As) {
+            relation.to = value.value;
+          } else if (name.value === RelationField.Foreign) {
+            relation.foreign = value.value;
+          } else if (name.value === RelationField.Local) {
+            relation.local = value.value;
           }
         }
 
@@ -110,8 +134,11 @@ export function astToOptions(
             continue;
           }
 
-          // Typings do not match for VariableNode
-          const argumentValue = (argument.value as ValueNodeWithValue).value.toString();
+          if (!isStringValueNode(argument.name.value, argument.value)) {
+            throw new Error(`Directive ${argument.name.value}  argument value must be of string type.`);
+          }
+
+          const argumentValue = argument.value.value;
           type2collection[node.name.value] = argumentValue;
           collection2type[argumentValue] = node.name.value;
           collections.unshift(argumentValue);
@@ -132,7 +159,12 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
   const inflateMap: Record<string, ProjectionType | string> = {};
   const projection: ProjectionType = {};
 
-  const rootType = extractType(info.schema.getQueryType()!);
+  const queryType = info.schema.getQueryType();
+  if (!queryType) {
+    throw new Error('Missing Query object in schema.');
+  }
+
+  const rootType = extractType(queryType);
   const extractPathType = (path: string[]) =>
     (path.reduce(
       (node, field) =>
@@ -175,6 +207,7 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
     },
   });
 
+  // @ts-ignore
   return build({ ...options, projection }).concat({
     $project: inflateMap[info.fieldName],
   });

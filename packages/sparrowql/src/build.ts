@@ -400,13 +400,13 @@ export function prepare({
 }
 
 const translateOperators = {
-  group: (start: string, step: GroupStep) => [{ $group: step.group }],
-  limit: (start: string, step: LimitStep) => [{ $limit: step.limit }],
-  match: (start: string, step: MatchStep) => [{ $match: step.match }],
-  projection: (start: string, step: ProjectionStep) => [
+  group: (step: GroupStep) => [{ $group: step.group }],
+  limit: (step: LimitStep) => [{ $limit: step.limit }],
+  match: (step: MatchStep) => [{ $match: step.match }],
+  projection: (step: ProjectionStep) => [
     { $project: step.projection },
   ],
-  relation: (start: string, step: RelationStep) => [
+  relation: (step: RelationStep, start: string) => [
     {
       $lookup: {
         as: getNameRelative(start, step.relation.to, false),
@@ -422,8 +422,15 @@ const translateOperators = {
       },
     },
   ],
-  skip: (start: string, step: SkipStep) => [{ $skip: step.skip }],
-  sort: (start: string, step: SortStep) => [{ $sort: step.sort }],
+  skip: (step: SkipStep) => [{ $skip: step.skip }],
+  sort: (step: SortStep) => [{ $sort: step.sort }],
+};
+
+const isStepOperator = (
+  mapFunctions: typeof translateOperators,
+  operator: string,
+): operator is keyof typeof mapFunctions => {
+  return operator in mapFunctions;
 };
 
 export function translate(start: string, steps: Step[]) {
@@ -435,19 +442,12 @@ export function translate(start: string, steps: Step[]) {
       throw new Error(`Invalid step: ${JSON.stringify(step)}`);
     }
 
-    const hasOwnProperty = (
-      mapFunctions: typeof translateOperators,
-      operator: string,
-    ): operator is keyof typeof mapFunctions => {
-      return operator in mapFunctions;
-    };
-
     const operator = operators[0];
-    if (!hasOwnProperty(translateOperators, operator)) {
+    if (!isStepOperator(translateOperators, operator)) {
       throw new Error(`Unknown operator: ${operator}`);
     }
 
-    pipeline.push(...translateOperators[operator](start, step as any));
+    pipeline.push(...translateOperators[operator](step as any, start));
   }
 
   return pipeline;
