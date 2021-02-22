@@ -1,15 +1,9 @@
 import {
   GraphQLObjectType,
-  GraphQLScalarType,
   GraphQLType,
-  ListTypeNode,
-  ListValueNode,
   NonNullTypeNode,
-  NullValueNode,
-  ObjectValueNode,
   StringValueNode,
   ValueNode,
-  VariableNode,
 } from 'graphql';
 import {
   visit,
@@ -19,7 +13,6 @@ import {
   NamedTypeNode,
 } from 'graphql/language';
 import { GraphQLResolveInfo } from 'graphql/type';
-import { GraphQLOutputType } from 'graphql/type/definition';
 import { build, Options, ProjectionType, Relation } from 'sparrowql';
 
 enum RelationField {
@@ -164,9 +157,10 @@ export function astToOptions(
   return { collections, relations, typeMap };
 }
 
+type InflateMap = string | { [key: string]: InflateMap };
 export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
   const scopes: string[] = [];
-  const inflateMap: Record<string, ProjectionType | string> = {};
+  const inflateMap: InflateMap = {};
   const projection: ProjectionType = {};
 
   const queryType = info.schema.getQueryType();
@@ -174,13 +168,12 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
     throw new Error('Missing Query object in schema.');
   }
 
-  const rootType = extractType(queryType);
   const extractPathType = (path: string[]) =>
-    (path.reduce(
+    path.reduce(
       (node, field) =>
-        extractType((node as GraphQLObjectType).getFields()[field].type),
-      rootType,
-    ) as GraphQLScalarType).name;
+        extractType(node.getFields()[field].type) as GraphQLObjectType,
+      queryType,
+    ).name;
 
   visit(info.operation, {
     Field(node) {
@@ -203,8 +196,11 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
           if (position[part] === undefined) {
             position[part] = {};
           }
-
-          position = position[part];
+          const positionPart = position[part];
+          if (typeof positionPart === 'string') {
+            throw new Error('Incorrect position path.');
+          }
+          position = positionPart;
         }
 
         position[path[0]] = `$${target}`;
@@ -217,8 +213,7 @@ export function astToPipeline(info: GraphQLResolveInfo, options: Options) {
     },
   });
 
-  // @ts-ignore
   return build({ ...options, projection }).concat({
-    $project: inflateMap[info.fieldName],
+    $project: inflateMap[info.fieldName] as Record<string, string>,
   });
 }
