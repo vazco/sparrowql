@@ -69,6 +69,20 @@ type Step =
   | SkipStep
   | SortStep;
 
+function isMongoQuery(
+  key: string,
+  query: MongoQuery | PerformQuery,
+): query is MongoQuery {
+  return isOperator(key);
+}
+
+function isPerformQuery(
+  key: string,
+  query: MongoQuery | PerformQuery,
+): query is PerformQuery {
+  return isOperator(key);
+}
+
 export function build(options: Options) {
   return translate(options.start, prepare(options));
 }
@@ -319,22 +333,12 @@ export function prepare({
       return;
     }
 
-    const isMongoQuery = (
-      key: string,
-      query: MongoQuery | PerformQuery,
-    ): query is MongoQuery => isOperator(key);
-    const isPerformQuery = (
-      key: string,
-      query: MongoQuery | PerformQuery,
-    ): query is PerformQuery => isOperator(key);
-
     const available = Object.keys(query).filter(key => {
       const singleQuery = query[key];
-      return isMongoQuery(key, singleQuery)
-        ? singleQuery.required.every(key =>
-            joined.includes(getNameCollection(key)),
-          )
-        : joined.includes(getNameCollection(key));
+      const keys = isMongoQuery(key, singleQuery)
+        ? singleQuery.required
+        : [key];
+      return keys.every(key => joined.includes(getNameCollection(key)));
     });
 
     if (available.length) {
