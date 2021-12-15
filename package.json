@@ -37,5 +37,8 @@
   "engines": {
     "npm": ">=7"
   },
-  "name": "sparrowql-public"
+  "name": "sparrowql-public",
+  "devDependencies": {
+    "@types/node": "^16.0.0"
+  }
 }

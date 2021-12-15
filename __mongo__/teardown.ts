@@ -1,4 +1,4 @@
-module.exports = async function setup() {
+export default async function setup() {
     if (global.__MONGO__ === undefined) return;
 
     await global.__MONGO__.db.dropDatabase();

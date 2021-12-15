@@ -1,5 +1,5 @@
-const {MongoClient} = require('mongodb');
-const {v1: uuid} = require('uuid');
+import { MongoClient } from 'mongodb';
+import { v1 as uuid } from 'uuid';
 
 module.exports = async function setup() {
     if (global.__MONGO__ !== undefined) return;
@@ -11,7 +11,6 @@ module.exports = async function setup() {
 };
 
 async function waitAndConnect(server) {
-    // eslint-disable-next-line no-constant-condition
     while (true) {
         try {
             return await MongoClient.connect(
