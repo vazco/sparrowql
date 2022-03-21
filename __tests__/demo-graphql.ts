@@ -137,7 +137,8 @@ const schemaSourceNullableRelation = `
           },
         };
 
-        const evaluate = (query: string) => graphql(schema, query, resolver);
+        const evaluate = (query: string) =>
+          graphql({ schema, source: query, rootValue: resolver });
 
         await expect(
           evaluate('{ posts { blog { topic } title } }'),
