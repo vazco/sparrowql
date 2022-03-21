@@ -1,8 +1,10 @@
-export default async function setup() {
-    if (global.__MONGO__ === undefined) return;
+export default async function teardown() {
+  if (global.__MONGO__ === undefined) {
+    return;
+  }
 
-    await global.__MONGO__.db.dropDatabase();
-    await global.__MONGO__.client.close();
+  await global.__MONGO__.db.dropDatabase();
+  await global.__MONGO__.client.close();
 
-    global.__MONGO__ = undefined;
-};
+  global.__MONGO__ = undefined;
+}

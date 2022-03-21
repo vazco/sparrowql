@@ -15,6 +15,10 @@ import {
 import { GraphQLResolveInfo } from 'graphql/type';
 import { build, Options, ProjectionType, Relation } from 'sparrowql';
 
+enum CollectionField {
+  Name = 'name',
+}
+
 enum RelationField {
   As = 'as',
   Foreign = 'foreign',
@@ -51,11 +55,24 @@ function extractTypeAST(type: FieldDefinitionNode | TypeNode): NamedTypeNode {
   return isNamedTypeNode(type) ? type : extractTypeAST(type.type);
 }
 
-function isStringValueNode(
+function isValidCollectionField(
   name: string,
   value: ValueNode,
 ): value is StringValueNode {
-  return Object.values<string>(RelationField).includes(name);
+  return (
+    Object.values<string>(CollectionField).includes(name) &&
+    value.kind === 'StringValue'
+  );
+}
+
+function isValidRelationField(
+  name: string,
+  value: ValueNode,
+): value is StringValueNode {
+  return (
+    Object.values<string>(RelationField).includes(name) &&
+    value.kind === 'StringValue'
+  );
 }
 
 export function astToOptions(
@@ -91,9 +108,9 @@ export function astToOptions(
         };
 
         for (const { name, value } of directive.arguments ?? []) {
-          if (!isStringValueNode(name.value, value)) {
+          if (!isValidRelationField(name.value, value)) {
             throw new Error(
-              `Directive ${name.value}  argument value must be of string type.`,
+              `Directive "${name.value}" argument value must be of string type.`,
             );
           }
 
@@ -131,13 +148,9 @@ export function astToOptions(
         }
 
         for (const argument of directive.arguments ?? []) {
-          if (argument.name.value !== 'name') {
-            continue;
-          }
-
-          if (!isStringValueNode(argument.name.value, argument.value)) {
+          if (!isValidCollectionField(argument.name.value, argument.value)) {
             throw new Error(
-              `Directive ${argument.name.value}  argument value must be of string type.`,
+              `Directive "${argument.name.value}" argument value must be of string type.`,
             );
           }
 

@@ -1,10 +1,15 @@
 {
-  "env": {
-    "jest": true
-  },
   "extends": "vazco/typescript",
+  "overrides": [
+    {
+      "files": ["**/__mocks__/**/*", "**/__tests__/**/*"],
+      "env": {
+        "jest": true
+      }
+    }
+  ],
   "root": true,
-  "globals": {
-    "testWithNCollections": false
+  "rules": {
+    "@typescript-eslint/explicit-module-boundary-types": "off"
   }
 }

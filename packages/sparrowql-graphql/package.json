@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "graphql": "^15.0.0",
-    "sparrowql": "file:../sparrowql"
+    "sparrowql": "0.3.3"
   },
   "engines": {
     "node": ">=8"

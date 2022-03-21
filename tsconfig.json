@@ -3,10 +3,12 @@
     "baseUrl": "packages",
     "composite": true,
     "declaration": true,
+    "esModuleInterop": true,
     "importHelpers": true,
-    "lib": ["es2017", "esnext.asynciterable"],
-    "module": "commonjs",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "paths": { "sparrowql": ["sparrowql/src"], "sparrowql-*": ["sparrowql-*/src"] },
     "strict": true,
-    "target": "es2017"
+    "target": "ES6"
   }
 }
