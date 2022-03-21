@@ -7,6 +7,8 @@ declare global {
   function testWithNCollections<Names extends readonly string[]>(
     name: string,
     collections: Names,
-    fn: (...collections: { [_ in keyof Names]: Collection }) => Promise<void>,
+    fn: (
+      ...collections: { [_ in keyof Names]: Collection<any> }
+    ) => Promise<void>,
   ): void;
 }

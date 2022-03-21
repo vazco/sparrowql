@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { build } from 'sparrowql';
 import { v1 as uuid } from 'uuid';
 
@@ -7,7 +7,7 @@ describe('projection', () => {
     'should work with 0',
     [uuid()] as const,
     async collectionA => {
-      const docs: { _id?: ObjectID; x?: string; y?: string }[] = [
+      const docs: { _id?: ObjectId; x?: string; y?: string }[] = [
         { x: uuid(), y: uuid() },
       ];
       await collectionA.insertMany(docs);

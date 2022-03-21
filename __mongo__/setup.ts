@@ -16,11 +16,7 @@ export default async function setup() {
 async function waitAndConnect(server: string) {
   for (let attempt = 0; attempt < 10; ++attempt) {
     try {
-      return await MongoClient.connect(server, {
-        autoReconnect: false,
-        poolSize: 1,
-        useNewUrlParser: true,
-      });
+      return await MongoClient.connect(server);
     } catch (error) {
       await new Promise(resolve => setTimeout(resolve, 250));
     }
