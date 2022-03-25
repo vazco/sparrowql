@@ -66,9 +66,7 @@ const schemaSourceNullableRelation = `
       'demo',
       [uuid(), uuid(), uuid()] as const,
       async (Blogs, Posts, Users) => {
-        const blogs = [
-          { _id: 0, ownerId: 3, topic: 'Best blog!' }, // prettier ignore
-        ];
+        const blogs = [{ _id: 0, ownerId: 3, topic: 'Best blog!' }];
 
         const posts = [
           { _id: 0, authorId: 0, blogId: 0, title: 'Being fast for dummies' },
