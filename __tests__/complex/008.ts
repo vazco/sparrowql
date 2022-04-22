@@ -20,6 +20,7 @@ testWithNCollections('complex 008', [uuid()] as const, async collectionA => {
         required: [`${collectionA.collectionName}._id`],
         // @ts-expect-error Fix `QueryType`.
         perform: relative => [
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           { [relative(`${collectionA.collectionName}._id`, false)]: 0 },
         ],
       },
