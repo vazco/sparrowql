@@ -14,10 +14,7 @@
     "mongodb"
   ],
   "dependencies": {
-    "graphql": "^15.0.0",
-    "sparrowql": "file:../sparrowql"
-  },
-  "engines": {
-    "node": ">=8"
+    "graphql": "^16.0.0 || ^15.0.0",
+    "sparrowql": "0.3.3"
   }
 }

@@ -18,8 +18,8 @@ type PerformQuery = {
 };
 
 type SortType = Record<string, -1 | 1>;
-export type ProjectionType = Record<string, string>;
-export type QueryType = Record<string, MongoQuery | PerformQuery>;
+export type ProjectionType = Record<string, 0 | 1 | string | unknown>;
+export type QueryType = Record<string, MongoQuery | PerformQuery | unknown>;
 
 export type Relation = {
   local: string | null;
@@ -31,7 +31,7 @@ export type Relation = {
 };
 
 type Computed = {
-  mapper: boolean;
+  mapper?: boolean;
   required: string[];
   result: string[];
   perform(
@@ -40,12 +40,12 @@ type Computed = {
 };
 
 export type Options = {
-  aliases: Record<string, string>;
-  computed: Record<string, Computed>;
+  aliases?: Record<string, string>;
+  computed?: Record<string, Computed>;
   limit?: number;
   projection?: ProjectionType;
   query?: QueryType;
-  relations: Relation[];
+  relations?: Relation[];
   skip?: number;
   sort?: SortType;
   start: string;
@@ -71,14 +71,14 @@ type Step =
 
 function isMongoQuery(
   key: string,
-  query: MongoQuery | PerformQuery,
+  query: MongoQuery | PerformQuery | unknown,
 ): query is MongoQuery {
   return isOperator(key);
 }
 
 function isPerformQuery(
   key: string,
-  query: MongoQuery | PerformQuery,
+  query: MongoQuery | PerformQuery | unknown,
 ): query is PerformQuery {
   return isOperator(key);
 }
@@ -105,7 +105,7 @@ export function prepare({
 
   const joined = [start];
   const mapped = [
-    ...(projection ? Object.values(projection) : []),
+    ...(projection ? (Object.values(projection) as string[]) : []),
     ...(query ? Object.keys(query).filter(field => !isOperator(field)) : []),
     ...(sort ? Object.keys(sort) : []),
   ]
@@ -216,7 +216,7 @@ export function prepare({
       projection: Object.keys(projection).reduce(
         (object, field) =>
           Object.assign(object, {
-            [field]: relative(projection[field], true),
+            [field]: relative(projection[field] as string, true),
           }),
         {},
       ),
@@ -228,7 +228,7 @@ export function prepare({
   function inlineGroup() {
     const toCompute = needed
       .filter(name => isComputed(name) && !joined.includes(name))
-      .map(name => [name, computed[stripComputed(name)]] as [string, Computed])
+      .map(name => [name, computed![stripComputed(name)]] as [string, Computed])
       .filter(definition =>
         definition[1].required.every(field =>
           joined.includes(getNameCollection(field)),
@@ -244,9 +244,10 @@ export function prepare({
           object: Record<string, any>,
           field: string | number,
         ) {
-          if (typeof projection?.[field] === 'string') {
+          const fieldProjection = projection?.[field];
+          if (typeof fieldProjection === 'string') {
             if (definition.mapper) {
-              projection[field]
+              fieldProjection
                 .replace(/^\$/, '')
                 .split('.')
                 .slice(1, -1)
@@ -259,7 +260,7 @@ export function prepare({
               object[field] = {
                 $first: isAbsolute
                   ? `$${field}`
-                  : relative(projection[field], true),
+                  : relative(fieldProjection, true),
               };
             }
           }
@@ -289,7 +290,7 @@ export function prepare({
                     return object;
                   }
 
-                  return addMappedFields(object, field);
+                  return addMappedFields(object as Record<string, any>, field);
                 }, {})
               : {},
             definition.perform(relative),
@@ -311,7 +312,7 @@ export function prepare({
         collection =>
           !joined.includes(collection) &&
           isComputed(collection) &&
-          !computed[stripComputed(collection)].mapper,
+          !computed![stripComputed(collection)].mapper,
       )
     ) {
       return;
@@ -378,7 +379,7 @@ export function prepare({
         collection =>
           !joined.includes(collection) &&
           isComputed(collection) &&
-          !computed[stripComputed(collection)].mapper,
+          !computed![stripComputed(collection)].mapper,
       )
     ) {
       return;

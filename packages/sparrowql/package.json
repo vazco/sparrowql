@@ -11,8 +11,5 @@
     "aggregate",
     "declarative",
     "mongodb"
-  ],
-  "engines": {
-    "node": ">=8"
-  }
+  ]
 }
