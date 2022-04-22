@@ -1,6 +1,6 @@
 {
   "name": "sparrowql-graphql",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -15,6 +15,6 @@
   ],
   "dependencies": {
     "graphql": "^16.0.0 || ^15.0.0",
-    "sparrowql": "0.3.3"
+    "sparrowql": "^0.4.0"
   }
 }
