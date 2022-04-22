@@ -1,3 +1,6 @@
+## v0.4.0 (2022-04-22)
+- **Changed:** Reworked the package in TypeScript. [\#29](https://github.com/vazco/sparrowql/issues/29)
+
 ## v0.3.3 (2020-10-09)
 - **Fixed:** Incorrect pipeline build result when one collection name is a prefix of the other collection name. [\#19](https://github.com/vazco/sparrowql/issues/19)
 
