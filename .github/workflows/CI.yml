@@ -18,10 +18,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-#      - name: Check dependency duplications
-#        uses: vazco/open-standards/actions/npm-dependency-duplications/@master
-#      - name: Check dependency vulnerabilities
-#        uses: vazco/open-standards/actions/npm-dependency-vulnerabilities/@master
+      - name: Check dependency duplications
+        uses: vazco/open-standards/actions/npm-dependency-duplications/@master
+      - name: Check dependency vulnerabilities
+        uses: vazco/open-standards/actions/npm-dependency-vulnerabilities/@master
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.9.0
         with:
