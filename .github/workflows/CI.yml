@@ -1,0 +1,39 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+        mongodb-version: [3.4, 3.6, 4.0, 4.2, 4.4, 6.0]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Check dependency duplications
+        uses: vazco/open-standards/actions/npm-dependency-duplications/@master
+      - name: Check dependency vulnerabilities
+        uses: vazco/open-standards/actions/npm-dependency-vulnerabilities/@master
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.9.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Install dependencies
+        run: npm i -g npm@8 --no-audit && npm ci --no-audit
+      - name: Lint
+        run: npm run lint
+      - name: Test
+        run: npm run coverage -- --no-cache --runInBand
+      - name: Report coverage
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          fail_ci_if_error: true
+

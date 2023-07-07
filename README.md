@@ -14,7 +14,7 @@
     <strong><a href="https://github.com/vazco/sparrowql/blob/master/.github/CONTRIBUTING.md">Contribute</a></strong> |
     <strong><a href="#usage">Usage</a></strong> |
     <strong><a href="https://github.com/vazco/sparrowql/blob/master/INTRODUCTION.md">Documentation</a></strong> |
-    <strong><a href="https://github.com/vazco/sparrowql/blob/master/FAQ.md">FAQ</a></strong> 
+    <strong><a href="https://github.com/vazco/sparrowql/blob/master/FAQ.md">FAQ</a></strong>
 </p>
 
 <p align="center">
@@ -36,8 +36,8 @@
     <a href="https://npmjs.org/package/sparrowql">
         <img src="https://img.shields.io/npm/v/sparrowql.svg" alt="Version">
     </a>
-    <a href="https://travis-ci.org/vazco/sparrowql">
-        <img src="https://img.shields.io/travis/vazco/sparrowql.svg" alt="Status">
+    <a href="https://github.com/vazco/sparrowql/actions?query=branch:master">
+        <img src="https://img.shields.io/github/actions/workflow/status/vazco/sparrowql/CI.yml.svg?branch=master" alt="Status">
     </a>
 </p>
 

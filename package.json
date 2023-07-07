@@ -3,7 +3,6 @@
   "private": true,
   "scripts": {
     "coverage": "jest --coverage",
-    "coverage:report": "codecov",
     "lint": "npm run lint:code && npm run lint:types",
     "lint:code": "eslint --cache --cache-location node_modules/.cache/eslint --cache-strategy content --ext js,ts .",
     "lint:types": "tsc --build tsconfig.global.json",
@@ -16,7 +15,6 @@
     "@types/jest": "27.4.1",
     "@types/node": "17.0.21",
     "@types/uuid": "8.3.4",
-    "codecov": "3.8.3",
     "eslint-config-vazco": "6.2.0",
     "graphql": "^16.0.0 || ^15.0.0",
     "jest": "27.5.1",
