@@ -5,6 +5,9 @@ import { example1 } from '../examples';
 
 const fn = `
   function get() {
+    if (typeof aliases !== 'undefined') {
+      return {projection, relations, start, aliases };
+    }
     return { projection, relations, start };
   }
 
@@ -23,13 +26,16 @@ const sparrowBuild = ({
   projection,
   relations,
   start,
+  aliases
 }: {
   projection: Record<string, unknown>;
   relations: any;
   start: string;
+  aliases: Record<string, string>;
 }) => {
+  console.log(projection, aliases)
   try {
-    return build({ projection, relations, start });
+    return build({ projection, relations, start, ...(aliases && aliases) });
   } catch (e) {
     return e;
   }
@@ -52,14 +58,13 @@ export const usePlayground = () => {
 
   const value = evaluateValue({ value: `${input}${fn}` });
 
-  const { projection, relations, start } = value || {};
-  const output = sparrowBuild({ relations, projection, start });
+  const { projection, relations, start, aliases } = value || {};
+  const output = sparrowBuild({ relations, projection, start, aliases });
 
   const { errorMessage } = getError({ value, output });
 
   useEffect(() => {
     const inputFromUrl = parseQuery();
-    console.log(inputFromUrl)
     if (inputFromUrl) {
         setInput(inputFromUrl);
     } else {
