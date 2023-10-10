@@ -72,8 +72,10 @@ import { build } from "sparrowql";
 **_Basic example_**
 
 Imagine you have a simple db model:
-<br>
-![Simple graph db model](graph.png)
+
+<be>
+
+![light](https://github.com/vazco/sparrowql/assets/34129845/51533344-1a8a-4993-a297-88729a8acf97#gh-dark-mode-only)![dark](https://github.com/vazco/sparrowql/assets/34129845/89cfcc30-16c1-4ddd-b502-de1016166586#gh-light-mode-only)
 
 And a some fixtures for it:
 
