@@ -1,4 +1,4 @@
-<h1 align="center">
+![4](https://github.com/vazco/sparrowql/assets/34129845/167bbfb5-211f-49fd-b149-edc74cef949b)![4](https://github.com/vazco/sparrowql/assets/34129845/04339214-eadc-42e6-bbf0-f5269bcbcc09)![3](https://github.com/vazco/sparrowql/assets/34129845/c9d169d6-4563-410b-b3d1-2cea6f1df7b4)<h1 align="center">
     <a href="https://github.com/vazco">vazco</a>/sparrowql
 </h1>
 
@@ -75,7 +75,8 @@ Imagine you have a simple db model:
 
 <be>
 
-![light](https://github.com/vazco/sparrowql/assets/34129845/51533344-1a8a-4993-a297-88729a8acf97#gh-dark-mode-only)![dark](https://github.com/vazco/sparrowql/assets/34129845/89cfcc30-16c1-4ddd-b502-de1016166586#gh-light-mode-only)
+![light](https://github.com/vazco/sparrowql/assets/34129845/51533344-1a8a-4993-a297-88729a8acf97#gh-dark-mode-only)
+![dark](https://github.com/vazco/sparrowql/assets/34129845/89cfcc30-16c1-4ddd-b502-de1016166586#gh-light-mode-only)
 
 And a some fixtures for it:
 
@@ -143,7 +144,13 @@ const results = await Posts.aggregate(pipeline).toArray();
 
 SparrowQL works correctly only on [directed trees](<https://en.wikipedia.org/wiki/Tree_(graph_theory)>) - in this case, you want to create a _query which takes all the posts that were posted on someone's blog and the name of the blog owner_. To make it work, you need to use **aliases**. Here is an example:
 
-![Simple db graph model with aliases](tree.png)
+![Simple db graph model with aliases](https://github.com/vazco/sparrowql/assets/34129845/eac2678e-5e98-4687-987a-05d61eb7a161#gh-light-mode-only)
+![Simple db graph model with aliases](https://github.com/vazco/sparrowql/assets/34129845/40ba393c-e5ca-4017-9427-7012c314a099#gh-dark-mode-only)
+
+
+
+
+
 
 The only thing to do is to create aliases:
 
