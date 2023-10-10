@@ -73,7 +73,7 @@ import { build } from "sparrowql";
 
 Imagine you have a simple db model:
 
-<be>
+<br>
 
 ![light](https://github.com/vazco/sparrowql/assets/34129845/51533344-1a8a-4993-a297-88729a8acf97#gh-dark-mode-only)
 ![dark](https://github.com/vazco/sparrowql/assets/34129845/89cfcc30-16c1-4ddd-b502-de1016166586#gh-light-mode-only)
@@ -146,11 +146,6 @@ SparrowQL works correctly only on [directed trees](<https://en.wikipedia.org/wik
 
 ![Simple db graph model with aliases](https://github.com/vazco/sparrowql/assets/34129845/eac2678e-5e98-4687-987a-05d61eb7a161#gh-dark-mode-only)
 ![Simple db graph model with aliases](https://github.com/vazco/sparrowql/assets/34129845/40ba393c-e5ca-4017-9427-7012c314a099#gh-light-mode-only)
-
-
-
-
-
 
 The only thing to do is to create aliases:
 
