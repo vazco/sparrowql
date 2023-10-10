@@ -1,5 +1,5 @@
 import './Header.css';
-import { example1, example2, example3 } from '../../examples';
+import { example1, example2 } from '../../examples';
 
 export const Header = ({ setInput }: { setInput: (value: string) => void }) => (
   <div className="Header__Wrapper">
@@ -17,7 +17,6 @@ export const Header = ({ setInput }: { setInput: (value: string) => void }) => (
       <nav className="Header__List">
         <button onClick={() => setInput(example1)}>Example 1</button>
         <button onClick={() => setInput(example2)}>Example 2</button>
-        <button onClick={() => setInput(example3)}>Example 3</button>
       </nav>
     </div>
     <a
