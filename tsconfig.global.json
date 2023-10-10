@@ -5,6 +5,7 @@
     "rootDir": ".",
     "tsBuildInfoFile": "node_modules/.cache/global.tsbuildinfo"
   },
+  "exclude": ["playground"],
   "references": [
     { "path": "packages/sparrowql/tsconfig.json" },
     { "path": "packages/sparrowql-graphql/tsconfig.json" }
