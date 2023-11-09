@@ -72,11 +72,13 @@ import { build } from "sparrowql";
 **_Basic example_**
 
 Imagine you have a simple db model:
-
 <br>
 
-![Simple db graph model with aliases](https://github.com/vazco/sparrowql/assets/34129845/51533344-1a8a-4993-a297-88729a8acf97.svg#gh-dark-mode-only)
-![Simple db graph model with aliases](https://github.com/vazco/sparrowql/assets/34129845/89cfcc30-16c1-4ddd-b502-de1016166586.svg#gh-light-mode-only)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/vazco/sparrowql/assets/34129845/dea5e803-1f48-4f46-987e-685b516485ad">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/vazco/sparrowql/assets/34129845/0c787c45-eb89-49e9-acd1-dbcbf314b861">
+  <img alt="Simple db graph model" src="https://github.com/vazco/sparrowql/assets/34129845/0c787c45-eb89-49e9-acd1-dbcbf314b861">
+</picture>
 
 And a some fixtures for it:
 
@@ -144,8 +146,11 @@ const results = await Posts.aggregate(pipeline).toArray();
 
 SparrowQL works correctly only on [directed trees](<https://en.wikipedia.org/wiki/Tree_(graph_theory)>) - in this case, you want to create a _query which takes all the posts that were posted on someone's blog and the name of the blog owner_. To make it work, you need to use **aliases**. Here is an example:
 
-![Simple db graph model with aliases](https://github.com/vazco/sparrowql/assets/34129845/eac2678e-5e98-4687-987a-05d61eb7a161#gh-dark-mode-only)
-![Simple db graph model with aliases](https://github.com/vazco/sparrowql/assets/34129845/40ba393c-e5ca-4017-9427-7012c314a099#gh-light-mode-only)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/vazco/sparrowql/assets/34129845/a20304fb-0d98-4756-a76b-74544980a574">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/vazco/sparrowql/assets/34129845/06c81bdd-70a9-42d4-9ed9-b9e3e53f3bcd">
+  <img alt="Simple db graph model with aliases" src="https://github.com/vazco/sparrowql/assets/34129845/06c81bdd-70a9-42d4-9ed9-b9e3e53f3bcd">
+</picture>
 
 The only thing to do is to create aliases:
 
