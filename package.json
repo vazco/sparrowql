@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "coverage": "jest --coverage",
-    "lint": "npm run lint:code && npm run lint:types",
+    "lint": "npm run lint:code && npm run lint:types && cd playground && npm run lint",
     "lint:code": "eslint --cache --cache-location node_modules/.cache/eslint --cache-strategy content --ext js,ts .",
     "lint:types": "tsc --build tsconfig.global.json",
     "build": "tsc --build tsconfig.build.json",

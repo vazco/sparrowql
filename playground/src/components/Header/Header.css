@@ -1,0 +1,42 @@
+.Header__Logo {
+  height: 4vh;
+  cursor: pointer;
+}
+
+.Header__Wrapper {
+  height: 6vh;
+  width: 100vw;
+  padding: 0 20px;
+  background-color: #1E1E1E;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.Header__ListWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.Header__ListWrapper h1 {
+  color: white;
+  font-size: 2rem;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.Header__List {
+  display: flex;
+  gap: 10px;
+  margin-left: 20px;
+  align-items: center;
+}
+
+.Header__List button {
+    border: none;
+    background: none;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 5px;
+}

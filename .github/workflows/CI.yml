@@ -29,6 +29,8 @@ jobs:
           mongodb-version: ${{ matrix.mongodb-version }}
       - name: Install dependencies
         run: npm i -g npm@8 --no-audit && npm ci --no-audit
+      - name: Install dependencies in playground
+        run: cd playground && npm ci --no-audit
       - name: Lint
         run: npm run lint
       - name: Test
@@ -37,4 +39,14 @@ jobs:
         uses: codecov/codecov-action@v3.1.1
         with:
           fail_ci_if_error: true
-
+      - name: Build docs
+        run: cd playground && npm run build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master' && matrix.node-version == '20.x'
+      - name: Deploy docs
+        uses: peaceiris/actions-gh-pages@v3.9.2
+        with:
+          allow_empty_commit: true
+          force_orphan: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playground/dist
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master' && matrix.node-version == '20.x'
