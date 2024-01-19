@@ -1,12 +1,12 @@
 import { MongoClient } from 'mongodb';
-import { v1 as uuid } from 'uuid';
+// import { v1 as uuid } from 'uuid';
 
 export default async function setup() {
   if (global.__MONGO__ !== undefined) {
     return;
   }
 
-  const server = process.env.MONGO_URL || `mongodb://localhost:27017/${uuid()}`;
+  const server = 'mongodb://localhost:27017/helloworld';
   const client = await waitAndConnect(server);
   const db = client.db();
 

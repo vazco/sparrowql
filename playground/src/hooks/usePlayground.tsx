@@ -71,14 +71,15 @@ export const usePlayground = () => {
         updateQuery(example1);
     }
   }, []);
-  const _setInput = (value: string) => {
+
+  const onInputChange = (value: string) => {
     updateQuery(value);
     setInput(value);
   };
 
   return {
     input,
-    setInput: _setInput,
+    setInput: onInputChange,
     output: errorMessage
       ? errorMessage.toString()
       : JSON.stringify(output, null, 2),

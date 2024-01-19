@@ -18,6 +18,7 @@ export function updateQuery(value: string) {
     window.location.hash = hash;
   } catch (_) {
     // It's alright.
+    console.warn('Failed to update query.');
   }
 }
 

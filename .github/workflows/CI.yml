@@ -28,7 +28,9 @@ jobs:
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
       - name: Install dependencies
-        run: npm i -g npm@8 --no-audit && npm ci --no-audit && cd playground && npm ci --no-audit
+        run: npm i -g npm@8 --no-audit && npm ci --no-audit
+      - name: Install dependencies in playground
+        run: cd playground && npm ci --no-audit
       - name: Lint
         run: npm run lint
       - name: Test
