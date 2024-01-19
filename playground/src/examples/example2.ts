@@ -4,8 +4,8 @@ export const example2 = `const aliases = {
 }
 
 const relations = [
-    { from: 'employments', local: 'salonId', to: 'salons', foreign: '_id'},
-    { from: 'salons', local: 'businessId', to: 'businesses', foreign: '_id'},
+    { from: 'employments', local: 'restaurantId', to: 'restaurants', foreign: '_id'},
+    { from: 'restaurants', local: 'businessId', to: 'businesses', foreign: '_id'},
     { from: 'businesses', local: 'ownerId', to: 'owners', foreign: '_id'},
     { from: 'employments', local: 'userId', to: 'employees', foreign: '_id'},
 ];
@@ -13,7 +13,7 @@ const relations = [
 const start = 'employments';
 
 const projection = {
-    salonName: 'salons.name',
+    restaurantName: 'restaurants.name',
     employee: 'employees.firstName',
     employer: 'owners.firstName'
   };`;
