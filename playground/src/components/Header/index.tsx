@@ -1,12 +1,14 @@
 import './Header.css';
 import { example1, example2 } from '../../examples';
+import sparrowqlLogo from '/sparrowqlLogo.png';
+import githubMarkWhite from '/github-mark-white.svg';
 
 export const Header = ({ setInput }: { setInput: (value: string) => void }) => (
   <div className="Header__Wrapper">
     <div className="Header__ListWrapper">
       <a href="https://github.com/vazco/sparrowql" target="_blank">
         <img
-          src="/sparrowqlLogo.png"
+          src={sparrowqlLogo}
           alt="sparrowql logo"
           className="Header__Logo"
         />
@@ -24,7 +26,7 @@ export const Header = ({ setInput }: { setInput: (value: string) => void }) => (
       target="_blank"
     >
       <img
-        src="/github-mark-white.svg"
+        src={githubMarkWhite}
         alt="github logo"
         className="Header__Logo"
       />
