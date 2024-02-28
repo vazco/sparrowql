@@ -14,6 +14,7 @@
     <strong><a href="https://github.com/vazco/sparrowql/blob/master/.github/CONTRIBUTING.md">Contribute</a></strong> |
     <strong><a href="#usage">Usage</a></strong> |
     <strong><a href="https://github.com/vazco/sparrowql/blob/master/INTRODUCTION.md">Documentation</a></strong> |
+    <strong><a href="https://vazco.github.io/sparrowql">Playground</a></strong> |
     <strong><a href="https://github.com/vazco/sparrowql/blob/master/FAQ.md">FAQ</a></strong>
 </p>
 
